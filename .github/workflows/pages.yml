@@ -1,0 +1,55 @@
+# Pubblica l'app su GitHub Pages. Pubblica SOLO da main.
+# Ogni settimana riparte da sola per avere i dati OSM freschi (senza fare commit).
+name: Pubblica su Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "23 4 * * 1"   # lunedì 04:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Dati freschi da Overpass (se non risponde, resta la copia del repo)
+        run: node scripts/fetch-data.mjs || echo "::warning::Overpass non disponibile, uso i dati salvati nel repo"
+      - name: Controlla i dati
+        run: node --test test/unit/snapshot.test.mjs
+      - name: Prepara il sito
+        run: |
+          mkdir -p _site
+          cp -r app/. _site/
+          sed -i "s/const BUILD = \"dev\";/const BUILD = \"${GITHUB_SHA::8}-${GITHUB_RUN_NUMBER}\";/" _site/sw.js
+          grep -q "${GITHUB_SHA::8}" _site/sw.js
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,162 @@
+{
+ "version": 0.6,
+ "elements": [
+  {
+   "type": "relation",
+   "id": 1,
+   "tags": {
+    "admin_level": "6",
+    "boundary": "administrative",
+    "name": "Città metropolitana di Milano",
+    "ref": "MI",
+    "ref:ISTAT": "015"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 2,
+   "tags": {
+    "admin_level": "6",
+    "boundary": "administrative",
+    "name": "Roma Capitale",
+    "ref": "RM",
+    "ref:ISTAT": "058"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 3,
+   "tags": {
+    "admin_level": "6",
+    "boundary": "administrative",
+    "name": "Reggio Emilia",
+    "ref": "RE",
+    "ref:ISTAT": "035"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 4,
+   "tags": {
+    "admin_level": "6",
+    "boundary": "administrative",
+    "name": "Reggio Calabria",
+    "ref": "RC",
+    "ref:ISTAT": "080"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 10,
+   "center": {
+    "lat": 45.4642,
+    "lon": 9.19
+   },
+   "tags": {
+    "admin_level": "8",
+    "boundary": "administrative",
+    "name": "Milano",
+    "ref:ISTAT": "015146",
+    "population": "1371498"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 11,
+   "center": {
+    "lat": 41.8933,
+    "lon": 12.4829
+   },
+   "tags": {
+    "admin_level": "8",
+    "boundary": "administrative",
+    "name": "Roma",
+    "ref:ISTAT": "058091",
+    "population": "2758454"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 12,
+   "center": {
+    "lat": 45.5853,
+    "lon": 9.2697
+   },
+   "tags": {
+    "admin_level": "8",
+    "boundary": "administrative",
+    "name": "Romano di Lombardia",
+    "ref:ISTAT": "016183",
+    "population": "20000"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 13,
+   "center": {
+    "lat": 44.6983,
+    "lon": 10.6312
+   },
+   "tags": {
+    "admin_level": "8",
+    "boundary": "administrative",
+    "name": "Reggio nell'Emilia",
+    "ref:ISTAT": "035033",
+    "population": "172000"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 14,
+   "center": {
+    "lat": 38.1113,
+    "lon": 15.6473
+   },
+   "tags": {
+    "admin_level": "8",
+    "boundary": "administrative",
+    "name": "Reggio di Calabria",
+    "ref:ISTAT": "080063",
+    "population": "171000"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 15,
+   "center": {
+    "lat": 40.8518,
+    "lon": 14.2681
+   },
+   "tags": {
+    "admin_level": "8",
+    "boundary": "administrative",
+    "name": "Sant'Anastasia",
+    "ref:ISTAT": "063071",
+    "population": "27000"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 16,
+   "center": {
+    "lat": 45.07,
+    "lon": 7.68
+   },
+   "tags": {
+    "admin_level": "8",
+    "boundary": "administrative",
+    "name": "Forlì",
+    "population": "117000"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 17,
+   "tags": {
+    "admin_level": "8",
+    "boundary": "administrative",
+    "name": "Senza Centro"
+   }
+  }
+ ]
+}

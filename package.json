@@ -1,0 +1,21 @@
+{
+  "name": "dove-raga",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dove raga? Tira il dado e scopri in quale sushi andare.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test \"test/unit/*.test.mjs\"",
+    "test:e2e": "playwright test",
+    "serve": "node scripts/serve.mjs",
+    "data": "node scripts/fetch-data.mjs",
+    "icons": "node scripts/make-icons.mjs",
+    "screenshots": "node scripts/screenshots.mjs"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.10.2",
+    "@playwright/test": "1.63.0"
+  },
+  "engines": { "node": ">=20" }
+}

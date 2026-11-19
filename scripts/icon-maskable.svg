@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="salmon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F59A6B"/>
+      <stop offset="1" stop-color="#E2694F"/>
+    </linearGradient>
+    <clipPath id="slice">
+      <path id="slicePath" d="M96 214 Q170 158 256 126 Q342 158 416 214 Q350 305 256 326 Q162 305 96 214 Z"/>
+    </clipPath>
+  </defs>
+  <rect width="512" height="512" fill="#141A17"/>
+  <g transform="translate(82 94) scale(0.68)">
+  <ellipse cx="256" cy="440" rx="150" ry="22" fill="#000" opacity=".28"/>
+  <!-- blocco di riso a forma di dado -->
+  <path d="M112 215 L256 290 L256 430 L112 355 Z" fill="#F6F3EA" stroke="#F6F3EA" stroke-width="18" stroke-linejoin="round"/>
+  <path d="M256 290 L400 215 L400 355 L256 430 Z" fill="#DAD5C6" stroke="#DAD5C6" stroke-width="18" stroke-linejoin="round"/>
+  <path d="M256 290 L256 430" stroke="#C9C3B2" stroke-width="3"/>
+  <!-- puntini: 2 sul lato sinistro, 3 sul destro -->
+  <g fill="#1C2420">
+    <g transform="matrix(144,75,0,140,112,215)">
+      <ellipse cx=".3" cy=".45" rx=".11" ry=".1"/>
+      <ellipse cx=".7" cy=".8" rx=".11" ry=".1"/>
+    </g>
+    <g transform="matrix(144,-75,0,140,256,290)">
+      <ellipse cx=".24" cy=".34" rx=".1" ry=".09"/>
+      <ellipse cx=".5" cy=".62" rx=".1" ry=".09"/>
+      <ellipse cx=".76" cy=".88" rx=".1" ry=".09"/>
+    </g>
+  </g>
+  <!-- fetta di salmone appoggiata sopra -->
+  <use href="#slicePath" fill="url(#salmon)"/>
+  <g clip-path="url(#slice)" stroke="#FFF4EC" stroke-width="11" stroke-linecap="round" opacity=".85" fill="none">
+    <path d="M60 230 Q160 190 300 110"/>
+    <path d="M110 280 Q220 235 360 150"/>
+    <path d="M170 330 Q280 285 420 200"/>
+  </g>
+  </g>
+  <g transform="translate(82 94) scale(0.68)">
+    <path d="M400 40 a62 62 0 0 1 62 62 c0 46 -62 108 -62 108 s-62 -62 -62 -108 a62 62 0 0 1 62 -62 z" fill="#F0866D" stroke="#141A17" stroke-width="14"/>
+    <circle cx="400" cy="102" r="22" fill="#141A17"/>
+  </g>
+</svg>

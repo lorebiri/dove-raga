@@ -1,0 +1,129 @@
+{
+ "version": 0.6,
+ "generator": "test",
+ "elements": [
+  {
+   "type": "node",
+   "id": 101,
+   "lat": 45.465,
+   "lon": 9.188,
+   "tags": {
+    "amenity": "restaurant",
+    "cuisine": "sushi",
+    "name": "Nigiri Prova Uno",
+    "addr:street": "Via Finta",
+    "addr:housenumber": "1",
+    "addr:city": "Milano",
+    "opening_hours": "Mo-Su 12:00-15:00,19:00-23:30",
+    "phone": "+39 02 0000001",
+    "website": "www.esempio-uno.test",
+    "takeaway": "yes"
+   }
+  },
+  {
+   "type": "way",
+   "id": 202,
+   "center": {
+    "lat": 45.47,
+    "lon": 9.2
+   },
+   "tags": {
+    "amenity": "restaurant",
+    "cuisine": "japanese;ramen",
+    "name": "Ramen di Prova Due"
+   }
+  },
+  {
+   "type": "node",
+   "id": 303,
+   "lat": 45.48,
+   "lon": 9.21,
+   "tags": {
+    "amenity": "fast_food",
+    "cuisine": "Sushi",
+    "name": "Sushi Veloce Tre",
+    "contact:phone": "+39 02 0000003; +39 333 0000000",
+    "contact:website": "https://esempio-tre.test/"
+   }
+  },
+  {
+   "type": "node",
+   "id": 304,
+   "lat": 45.48001,
+   "lon": 9.21001,
+   "tags": {
+    "amenity": "fast_food",
+    "cuisine": "sushi",
+    "name": "sushi veloce tre"
+   }
+  },
+  {
+   "type": "node",
+   "id": 405,
+   "lat": 45.43,
+   "lon": 9.15,
+   "tags": {
+    "amenity": "restaurant",
+    "cuisine": "sushi",
+    "name": "Uramaki Quattro: il nome lunghissimo che va a capo più volte sulla cartolina"
+   }
+  },
+  {
+   "type": "node",
+   "id": 506,
+   "lat": 45.4642,
+   "lon": 9.19,
+   "tags": {
+    "amenity": "restaurant",
+    "cuisine": "sushi"
+   }
+  },
+  {
+   "type": "node",
+   "id": 607,
+   "lat": 45.4642,
+   "lon": 9.1901,
+   "tags": {
+    "amenity": "restaurant",
+    "cuisine": "italian",
+    "name": "Pizzeria Non Sushi"
+   }
+  },
+  {
+   "type": "relation",
+   "id": 708,
+   "center": {
+    "lat": 45.55,
+    "lon": 9.3
+   },
+   "tags": {
+    "amenity": "restaurant",
+    "cuisine": "japanese",
+    "name": "Izakaya Cinque <b>",
+    "website": "javascript:alert(1)"
+   }
+  },
+  {
+   "type": "node",
+   "id": 809,
+   "lat": 41.9,
+   "lon": 12.49,
+   "tags": {
+    "amenity": "restaurant",
+    "cuisine": "sushi",
+    "name": "Temaki Roma Sei"
+   }
+  },
+  {
+   "type": "node",
+   "id": 910,
+   "lat": 45.9999,
+   "lon": 9.0001,
+   "tags": {
+    "amenity": "restaurant",
+    "cuisine": "sushi",
+    "name": "Confine Sette"
+   }
+  }
+ ]
+}

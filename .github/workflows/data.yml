@@ -1,0 +1,44 @@
+# Aggiorna la copia dei dati OSM salvata nel repo (app/data/) sul ramo da cui parte.
+# La pubblicazione settimanale scarica dati freschi da sola (pages.yml): questa copia serve
+# per sviluppo, test e come riserva se Overpass non risponde.
+name: Dati OSM (copia nel repo)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["claude/**"]
+    paths:
+      - "scripts/fetch-data.mjs"
+      - "scripts/lib/**"
+      - ".github/workflows/data.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: github.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Scarica da Overpass e genera i file statici
+        run: node scripts/fetch-data.mjs
+      - name: Controlla i file generati
+        run: node --test test/unit/snapshot.test.mjs
+      - name: Salva nel ramo se cambiati
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/data
+          if git diff --cached --quiet; then echo "Nessun cambiamento"; exit 0; fi
+          git commit -m "Dati OSM aggiornati ($(date -u +%Y-%m-%d))"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
