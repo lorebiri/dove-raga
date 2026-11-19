@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><title>Cartolina C</title>
+<style>
+@font-face{font-family:"Anton";src:url(../fonts/anton.woff2) format("woff2")}
+@font-face{font-family:"Space Mono";src:url(../fonts/space-mono-700.woff2) format("woff2");font-weight:700}
+html,body{margin:0}
+.c{width:1080px;height:1920px;position:relative;overflow:hidden;background:#0A0A0A;color:#fff;font-family:"Space Mono",monospace;font-weight:700}
+.tick{position:absolute;left:0;right:0;background:#B8FF00;color:#0A0A0A;font-size:38px;letter-spacing:.12em;white-space:nowrap;padding:16px 0;border-block:6px solid #fff}
+.t1{top:0}.t2{top:1000px;transform:rotate(-4deg);left:-40px;right:-40px;background:#3D2BFF;color:#fff}
+.top{position:absolute;left:70px;right:70px;top:150px;display:flex;justify-content:space-between;font-size:34px;letter-spacing:.14em}
+.top span:last-child{border:4px solid #fff;padding:4px 16px}
+.die{position:absolute;left:70px;top:270px;width:600px;transform:rotate(-4deg)}
+.big{position:absolute;right:60px;top:300px;font-family:"Anton";font-size:180px;line-height:.92;color:#B8FF00;text-shadow:12px 12px 0 #3D2BFF;text-align:right}
+.lbl{position:absolute;left:70px;top:1150px;font-size:36px;letter-spacing:.1em;color:#B8FF00}
+.name{position:absolute;left:70px;right:70px;top:1210px;font-family:"Anton";font-size:176px;line-height:.95;text-transform:uppercase}
+.meta{position:absolute;left:70px;right:70px;top:1555px;display:flex;gap:0;border:6px solid #fff;font-size:44px}
+.meta span{flex:1;padding:18px 24px}
+.meta span+span{border-left:6px solid #fff}
+.cta{position:absolute;left:70px;right:70px;bottom:90px;background:#fff;color:#0A0A0A;padding:22px 30px;font-size:40px;box-shadow:14px 14px 0 #FF2E88}
+.cta b{font-family:"Anton";font-weight:400;font-size:64px;display:block;letter-spacing:.02em}
+.osm{position:absolute;left:70px;bottom:30px;font-size:22px;color:#aaa;font-weight:700}
+</style></head><body><div class="c">
+<div class="tick t1">✦ DECIDE IL DADO ✦ NIENTE SONDAGGI ✦ DECIDE IL DADO ✦ NIENTE SONDAGGI</div>
+<div class="top"><span>DOVE RAGA?</span><span>ESITO #0427</span></div>
+<img class="die" src="simbolo.svg" alt="">
+<div class="big">HA<br>DE<br>CI<br>SO</div>
+<div class="tick t2">SUSHI ✦ STASERA ✦ SUSHI ✦ STASERA ✦ SUSHI ✦ STASERA ✦ SUSHI</div>
+<div class="lbl">&gt; SUSHI A 1,2 KM. IL DADO HA SCELTO:</div>
+<div class="name">Kawa Sushi Lab</div>
+<div class="cta"><b>TIRA ANCHE TU →</b>lorebiri.github.io/dove-raga</div>
+<div class="osm">Dati © contributori OpenStreetMap</div>
+</div></body></html>

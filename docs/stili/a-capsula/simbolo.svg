@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Capsula a sorpresa con dentro un nigiri. Originale per «Dove raga?». -->
+  <defs>
+    <clipPath id="top"><rect x="0" y="0" width="512" height="262"/></clipPath>
+    <clipPath id="ball"><circle cx="256" cy="262" r="186"/></clipPath>
+  </defs>
+  <g transform="rotate(-14 256 262)">
+    <circle cx="256" cy="262" r="186" fill="#FFF6E0"/>
+    <g clip-path="url(#ball)">
+      <rect x="0" y="0" width="512" height="262" fill="#FF8CC6"/>
+      <rect x="0" y="262" width="512" height="250" fill="#C8FF2E"/>
+      <!-- nigiri dentro la capsula -->
+      <rect x="150" y="172" width="212" height="80" rx="30" fill="#FFF6E0" stroke="#1E0B4B" stroke-width="10"/>
+      <path d="M138 190 Q200 118 300 124 Q360 132 376 180 Q350 212 256 214 Q168 214 138 190Z" fill="#FF6A3D" stroke="#1E0B4B" stroke-width="10" stroke-linejoin="round"/>
+      <g stroke="#FFE3D2" stroke-width="11" stroke-linecap="round" fill="none">
+        <path d="M196 142 Q210 170 206 200"/><path d="M252 128 Q266 160 262 204"/><path d="M308 134 Q322 160 318 198"/>
+      </g>
+      <rect x="0" y="246" width="512" height="32" fill="#1E0B4B"/>
+      <path d="M118 214 A150 150 0 0 1 196 114" stroke="#fff" stroke-width="18" stroke-linecap="round" fill="none" opacity=".85"/>
+    </g>
+    <circle cx="256" cy="262" r="186" fill="none" stroke="#1E0B4B" stroke-width="16"/>
+  </g>
+  <path d="M420 58 l14 38 38 14 -38 14 -14 38 -14 -38 -38 -14 38 -14z" fill="#C8FF2E" stroke="#1E0B4B" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M84 388 l9 24 24 9 -24 9 -9 24 -9 -24 -24 -9 24 -9z" fill="#2EE6FF" stroke="#1E0B4B" stroke-width="6" stroke-linejoin="round"/>
+</svg>

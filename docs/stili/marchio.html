@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Marchio · Dove raga?</title>
+<style>
+@font-face{font-family:"Lilita One";src:url(fonts/lilita-one.woff2) format("woff2")}
+@font-face{font-family:"Rubik";src:url(fonts/rubik-var.woff2) format("woff2");font-weight:300 900}
+@font-face{font-family:"Bricolage";src:url(fonts/bricolage-800.woff2) format("woff2");font-weight:800}
+@font-face{font-family:"Anton";src:url(fonts/anton.woff2) format("woff2")}
+@font-face{font-family:"Space Mono";src:url(fonts/space-mono-700.woff2) format("woff2");font-weight:700}
+@font-face{font-family:"Space Mono";src:url(fonts/space-mono-400.woff2) format("woff2");font-weight:400}
+html,body{margin:0;background:#fff;font-family:Rubik,sans-serif}
+.box{display:inline-block;margin:20px}
+#logo{display:inline-flex;align-items:center;gap:22px;padding:40px 56px}
+#logo img{width:150px;height:150px}
+#simbolo{width:512px;height:512px;display:grid;place-items:center}
+#simbolo img{width:512px;height:512px}
+#icona,#maskable{width:512px;height:512px;display:grid;place-items:center;overflow:hidden}
+#icona img{width:86%}
+#maskable img{width:64%}
+/* schermata home del telefono (generica) */
+#home{width:412px;height:300px;padding:28px 24px;box-sizing:border-box;display:grid;grid-template-columns:repeat(4,1fr);gap:20px 14px;font:500 13px Rubik,sans-serif;color:#fff;
+  background:linear-gradient(160deg,#3b4a6b,#1d2233 60%,#2c1d33)}
+#home .app{display:flex;flex-direction:column;align-items:center;gap:6px}
+#home .ic{width:64px;height:64px;border-radius:16px;background:rgba(255,255,255,.18)}
+#home .ic.circle{border-radius:50%}
+#home .me{overflow:hidden;display:grid;place-items:center}
+#home .me img{width:100%;height:100%}
+/* profilo social: avatar rotondo piccolo */
+#avatar{width:412px;padding:22px;box-sizing:border-box;background:#fff;color:#111;font:14px Rubik,sans-serif;display:flex;flex-direction:column;gap:18px}
+#avatar .p{display:flex;align-items:center;gap:14px}
+#avatar .av{border-radius:50%;overflow:hidden;flex:none;display:grid;place-items:center}
+#avatar .av img{width:100%;height:100%}
+#avatar .dark{background:#111;color:#fff;border-radius:14px;padding:14px}
+#avatar b{display:block;font-size:15px}
+#avatar small{color:#777}
+#avatar .dark small{color:#aaa}
+</style>
+</head>
+<body>
+<div class="box" id="logoWrap"><div id="logo"></div></div>
+<div class="box"><div id="simbolo"><img alt=""></div></div>
+<div class="box"><div id="icona"><img alt=""></div></div>
+<div class="box"><div id="maskable"><img alt=""></div></div>
+<div class="box"><div id="home"></div></div>
+<div class="box"><div id="avatar"></div></div>
+<script>
+const D = {
+  "a-capsula": { bg: "#1E0B4B", logoBg: "#1E0B4B",
+    word: `<span style="font:400 120px 'Lilita One';color:#FFF6E0;text-shadow:0 7px 0 #FF3D9A,0 13px 0 #12052E;letter-spacing:-.01em">dove <span style="color:#C8FF2E">raga?</span></span>` },
+  "b-sticker": { bg: "#FFE600", logoBg: "#FFE600",
+    word: `<span style="font:800 128px Bricolage;color:#121212;letter-spacing:-.04em;line-height:.9">dove<br><span style="background:#FF5A36;color:#fff;padding:0 18px;border:6px solid #121212;border-radius:22px;display:inline-block;transform:rotate(-3deg);box-shadow:8px 8px 0 #121212">raga?</span></span>` },
+  "c-y2k": { bg: "#0A0A0A", logoBg: "#0A0A0A",
+    word: `<span style="display:flex;flex-direction:column;gap:6px"><span style="font:400 150px Anton;color:#B8FF00;line-height:.9;letter-spacing:.01em;text-shadow:6px 6px 0 #3D2BFF">DOVE RAGA?</span><span style="font:700 26px 'Space Mono';color:#fff;letter-spacing:.3em">✦ DECIDE IL DADO ✦</span></span>` },
+};
+const d = new URLSearchParams(location.search).get("d") || "a-capsula";
+const c = D[d];
+const sym = `${d}/simbolo.svg`;
+document.getElementById("logo").style.background = c.logoBg;
+document.getElementById("logo").innerHTML = `<img src="${sym}" alt="">${c.word}`;
+document.querySelector("#simbolo img").src = sym;
+for (const id of ["icona", "maskable"]) { const el = document.getElementById(id); el.style.background = c.bg; el.querySelector("img").src = sym; }
+const icon = `<span class="ic me" style="background:${c.bg}"><img src="${sym}" alt="" style="width:86%;height:86%"></span>`;
+document.getElementById("home").innerHTML = Array.from({ length: 8 }, (_, i) =>
+  i === 5 ? `<div class="app">${icon}<span>Dove raga?</span></div>` : `<div class="app"><span class="ic"></span><span>&nbsp;</span></div>`).join("");
+const av = s => `<span class="av" style="width:${s}px;height:${s}px;background:${c.bg}"><img src="${sym}" alt="" style="width:78%;height:78%"></span>`;
+document.getElementById("avatar").innerHTML = `
+  <div class="p">${av(56)}<div><b>doveraga</b><small>Sushi stasera? Decide il dado.</small></div></div>
+  <div class="p dark">${av(44)}<div><b>doveraga</b><small>ha pubblicato un video · 2 min</small></div>${av(28)}</div>`;
+</script>
+</body>
+</html>

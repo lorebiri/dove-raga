@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Tavola · Dove raga?</title>
+<style>
+@font-face{font-family:"Rubik";src:url(fonts/rubik-var.woff2) format("woff2");font-weight:300 900}
+html,body{margin:0}
+body{width:1800px;background:#EDEDED;color:#111;font-family:Rubik,sans-serif;padding:48px;box-sizing:border-box}
+h1{margin:0;font-size:44px;font-weight:900;letter-spacing:-.02em}
+.sub{margin:6px 0 28px;font-size:20px;color:#444;max-width:1300px}
+.pal{display:flex;gap:8px;margin:-12px 0 28px}
+.pal span{width:56px;height:28px;border-radius:8px;border:1px solid rgba(0,0,0,.2)}
+.row{display:flex;gap:28px;align-items:flex-start;margin-bottom:32px}
+figure{margin:0;display:flex;flex-direction:column;gap:8px}
+figcaption{font-size:15px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.08em}
+img{display:block;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.12)}
+.logo img{height:230px}
+.sq img{width:230px;height:230px}
+.mask{position:relative;width:230px;height:230px}
+.mask img{width:230px;height:230px;border-radius:50%}
+.mask::after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(0,0,0,.25)}
+.phone img{height:900px;border-radius:28px}
+.card img{height:900px;border-radius:18px}
+.stack{display:flex;flex-direction:column;gap:20px}
+.small img{width:412px}
+</style>
+</head>
+<body>
+<h1 id="t"></h1>
+<p class="sub" id="s"></p>
+<div class="pal" id="pal"></div>
+<div class="row">
+  <figure class="logo"><figcaption>Logo orizzontale</figcaption><img id="logo" alt=""></figure>
+  <figure class="sq"><figcaption>Simbolo</figcaption><img id="sim" alt="" style="background:#fff"></figure>
+  <figure class="sq"><figcaption>Icona app</figcaption><img id="ico" alt="" style="border-radius:52px"></figure>
+  <figure><figcaption>Maskable (cerchio)</figcaption><div class="mask"><img id="mask" alt=""></div></figure>
+</div>
+<div class="row">
+  <figure class="small"><figcaption>Schermata home del telefono</figcaption><img id="home" alt=""></figure>
+  <figure class="small"><figcaption>Foto profilo (cerchio piccolo)</figcaption><img id="av" alt=""></figure>
+</div>
+<div class="row">
+  <figure class="phone"><figcaption>Schermata principale</figcaption><img id="p1" alt=""></figure>
+  <figure class="phone"><figcaption>Risultato</figcaption><img id="p2" alt=""></figure>
+  <figure class="card"><figcaption>Cartolina 9:16</figcaption><img id="p3" alt=""></figure>
+</div>
+<script>
+const T = {
+  "a-capsula": ["A · Capsula", "Macchinetta a sorpresa: giri la manovella, cade una capsula, dentro c'è il locale. Viola notte, lime acido e rosa shocking; tipografia tonda e grossa; capsule che ballano.", ["#1E0B4B", "#C8FF2E", "#FF3D9A", "#2EE6FF", "#FFF6E0"]],
+  "b-sticker": ["B · Sticker", "Pacchetto di adesivi: tutto è uno sticker col bordo bianco, storto il giusto, su giallo acido. Il nigiri-dado ha gli occhi; il tono è quello della chat di gruppo.", ["#FFE600", "#121212", "#FF5A36", "#00D68F", "#2B4BFF"]],
+  "c-y2k": ["C · Brutal Y2K", "Bianco e nero duro, verde acido e blu elettrico, scritte enormi e strette, monospazio, nastro che scorre. Il simbolo è un dado i cui puntini formano un punto di domanda.", ["#0A0A0A", "#B8FF00", "#3D2BFF", "#FFFFFF", "#FF2E88"]],
+};
+const d = new URLSearchParams(location.search).get("d");
+const [t, s, pal] = T[d];
+document.getElementById("t").textContent = "Dove raga? — direzione " + t;
+document.getElementById("s").textContent = s;
+document.getElementById("pal").innerHTML = pal.map(c => `<span style="background:${c}" title="${c}"></span>`).join("");
+const src = { logo: "logo.png", sim: "simbolo.png", ico: "icona-512.png", mask: "icona-maskable-512.png", home: "home.png", av: "avatar.png", p1: "01-principale.png", p2: "02-risultato.png", p3: "03-cartolina.png" };
+for (const [id, f] of Object.entries(src)) document.getElementById(id).src = `${d}/screenshot/${f}`;
+</script>
+</body>
+</html>

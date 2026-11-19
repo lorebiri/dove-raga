@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Nigiri-dado adesivo con fumetto. Originale per «Dove raga?». -->
+  <defs>
+    <g id="shape">
+      <rect x="120" y="206" width="262" height="212" rx="48"/>
+      <path d="M100 236 Q140 150 252 148 Q366 148 404 236 Q382 272 252 274 Q122 272 100 236Z"/>
+      <path d="M346 54 a78 78 0 1 1 -10 155 l-46 24 14 -44 a78 78 0 0 1 42 -135z"/>
+    </g>
+  </defs>
+  <g transform="rotate(-8 256 256)">
+    <use href="#shape" fill="#121212" transform="translate(12 14)" stroke="#121212" stroke-width="40" stroke-linejoin="round"/>
+    <use href="#shape" fill="#fff" stroke="#fff" stroke-width="40" stroke-linejoin="round"/>
+    <rect x="120" y="206" width="262" height="212" rx="48" fill="#FFF8EC" stroke="#121212" stroke-width="10"/>
+    <path d="M120 360 h262 v10 a48 48 0 0 1 -48 48 h-166 a48 48 0 0 1 -48 -48z" fill="#EADFC8"/>
+    <rect x="120" y="206" width="262" height="212" rx="48" fill="none" stroke="#121212" stroke-width="10"/>
+    <path d="M100 236 Q140 150 252 148 Q366 148 404 236 Q382 272 252 274 Q122 272 100 236Z" fill="#FF5A36" stroke="#121212" stroke-width="10" stroke-linejoin="round"/>
+    <g stroke="#FFD2C4" stroke-width="13" stroke-linecap="round" fill="none">
+      <path d="M170 180 Q190 214 184 252"/><path d="M240 162 Q262 204 256 258"/><path d="M314 172 Q334 206 330 250"/>
+    </g>
+    <circle cx="206" cy="328" r="18" fill="#121212"/><circle cx="300" cy="328" r="18" fill="#121212"/>
+    <circle cx="212" cy="321" r="6" fill="#fff"/><circle cx="306" cy="321" r="6" fill="#fff"/>
+    <path d="M232 360 Q254 384 276 360" stroke="#121212" stroke-width="10" stroke-linecap="round" fill="none"/>
+    <circle cx="176" cy="362" r="12" fill="#FF9DB5" opacity=".8"/><circle cx="330" cy="362" r="12" fill="#FF9DB5" opacity=".8"/>
+    <path d="M346 54 a78 78 0 1 1 -10 155 l-46 24 14 -44 a78 78 0 0 1 42 -135z" fill="#2B4BFF" stroke="#121212" stroke-width="10" stroke-linejoin="round"/>
+    <path d="M326 108 a28 28 0 1 1 40 25 q-12 6 -12 22" stroke="#fff" stroke-width="16" stroke-linecap="round" fill="none"/>
+    <circle cx="354" cy="182" r="10" fill="#fff"/>
+  </g>
+</svg>

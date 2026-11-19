@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Dado con i puntini a forma di punto di domanda. Originale per «Dove raga?». -->
+  <g transform="rotate(-7 256 256)">
+    <rect x="90" y="90" width="380" height="380" rx="70" fill="#3D2BFF" stroke="#0A0A0A" stroke-width="12"/>
+    <rect x="66" y="66" width="380" height="380" rx="70" fill="#B8FF00" stroke="#0A0A0A" stroke-width="12"/>
+    <path d="M100 130 Q104 98 136 94" stroke="#fff" stroke-width="14" stroke-linecap="round" fill="none" opacity=".9"/>
+    <g fill="#0A0A0A"><circle cx="210" cy="118" r="18"/><circle cx="256" cy="118" r="18"/><circle cx="302" cy="118" r="18"/><circle cx="164" cy="164" r="18"/><circle cx="348" cy="164" r="18"/><circle cx="348" cy="210" r="18"/><circle cx="256" cy="256" r="18"/><circle cx="302" cy="256" r="18"/><circle cx="256" cy="302" r="18"/><circle cx="256" cy="394" r="18"/></g>
+  </g>
+  <path d="M440 18 q6 40 40 46 q-34 6 -40 46 q-6 -40 -40 -46 q34 -6 40 -46z" fill="#fff" stroke="#0A0A0A" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M44 430 q4 24 24 28 q-20 4 -24 28 q-4 -24 -24 -28 q20 -4 24 -28z" fill="#FF2E88" stroke="#0A0A0A" stroke-width="5" stroke-linejoin="round"/>
+</svg>
