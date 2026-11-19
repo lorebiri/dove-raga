@@ -3,14 +3,16 @@
 Sushi stasera ma nel gruppo nessuno decide? Tiri il dado-nigiri e lui sceglie il locale vicino a te, ovunque in Italia.
 Web app gratuita, senza server, senza account, senza tracciamento. Pensata per il telefono e per essere condivisa (storie, TikTok, gruppi).
 
+Stile grafico: «Sticker» (giallo acido, adesivi, nigiri-mascotte, tono da chat di gruppo). Vedi `docs/stili/`.
+
 Indirizzo previsto: <https://lorebiri.github.io/dove-raga/>
 
 ## Come funziona
 
-- **Dati statici.** Una volta a settimana GitHub Actions scarica da Overpass (OpenStreetMap) tutti i ristoranti e fast food sushi/giapponesi d'Italia e l'elenco dei comuni, e li salva come file JSON compatti divisi in riquadri di 1° (`app/data/`). L'app legge solo questi file: nessuna chiamata a servizi esterni quando qualcuno tira il dado, quindi regge qualunque traffico.
+- **Dati statici.** Una volta a settimana GitHub Actions scarica da Overpass (OpenStreetMap) tutti i ristoranti e fast food sushi/giapponesi d'Italia e l'elenco dei comuni, e li salva come file JSON compatti divisi in riquadri di 1° (`app/data/`). Lo scaricamento è diviso in zone da 2°, una richiesta alla volta con pause, nuovi tentativi su un altro server in caso di errore, e i file vengono sostituiti solo se tutte le zone sono arrivate e il totale è credibile (minimo assoluto e niente crolli rispetto alla copia precedente). L'app legge solo questi file: nessuna chiamata a servizi esterni quando qualcuno tira il dado, quindi regge qualunque traffico.
 - **Ricerca per città.** Elenco statico dei comuni (dai confini comunali OSM, con sigla di provincia e abitanti) e suggerimenti mentre scrivi.
 - **Il tiro.** Sceglie a caso tra i locali entro il raggio (2, 5, 10, 25 km), evita di ripetere il precedente; «Nah, ritira» esclude e ritira.
-- **Cartolina.** Immagine 9:16 (1080×1920) generata nel browser con nome, distanza e link dell'app; condivisa con la condivisione di sistema, oppure scaricata con il link copiato.
+- **Sticker per le storie.** Immagine 9:16 (1080×1920) generata nel browser con nome, distanza e link dell'app; condivisa con la condivisione di sistema, oppure scaricata con il link copiato.
 - **Modalità gruppo.** «Manda al gruppo» crea un link col risultato nel frammento (`#g=…`): chi lo apre vede lo stesso esito. Il frammento non arriva mai al server e nel link non c'è la posizione di chi ha tirato.
 - **Offline.** Un service worker tiene in memoria l'interfaccia e le zone già viste.
 - **Privacy.** Niente cookie, niente tracker, caratteri ospitati nel repo. La posizione resta sul telefono. Nel `localStorage` restano solo raggio scelto e locali esclusi.
@@ -26,6 +28,7 @@ scripts/
   lib/osm.mjs         trasformazione Overpass → file compatti (funzioni pure)
   serve.mjs           server statico locale su /dove-raga/
   make-icons.mjs      icone PNG da app/icon.svg
+  stili.mjs           screenshot e tavola della direzione grafica (docs/stili)
   screenshots.mjs     screenshot del collaudo in docs/screenshot/
 test/unit/            test con node:test
 test/e2e/             test Playwright su viewport di telefono
@@ -52,4 +55,4 @@ npm run screenshots    # screenshot in docs/screenshot/
 ## Licenze
 
 - Dati © contributori [OpenStreetMap](https://www.openstreetmap.org/copyright), licenza ODbL 1.0 (vedi `app/data/LICENSE.txt`).
-- Caratteri Dela Gothic One e Zen Kaku Gothic New: SIL Open Font License 1.1 (`app/fonts/`).
+- Caratteri Bricolage Grotesque e Rubik: SIL Open Font License 1.1 (`app/fonts/`).
