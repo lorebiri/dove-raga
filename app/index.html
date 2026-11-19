@@ -75,7 +75,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{o
 .stage{display:grid;place-items:center;padding-block:34px 18px;cursor:pointer;border:none;background:transparent;border-radius:22px;width:100%;perspective:700px;-webkit-tap-highlight-color:transparent;color:inherit}
 .stage:disabled{cursor:default}
 .stage:disabled .cube{opacity:.85}
-.cube{width:120px;height:120px;position:relative;transform-style:preserve-3d;transform:rotateX(-24deg) rotateY(32deg);transition:transform 1.3s cubic-bezier(.18,.9,.25,1);will-change:transform}
+.cube{display:block;width:120px;height:120px;position:relative;transform-style:preserve-3d;transform:rotateX(-24deg) rotateY(32deg);transition:transform 1.3s cubic-bezier(.18,.9,.25,1);will-change:transform}
 .face{position:absolute;inset:0;border-radius:22px;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:18px;
   background:radial-gradient(circle at 30% 25%,#fff 0 3px,transparent 4px) 0 0/22px 18px,
              radial-gradient(ellipse at 70% 70%,rgba(0,0,0,.05) 0 4px,transparent 5px) 0 0/26px 20px,var(--grain);
@@ -87,7 +87,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{o
 .f1{transform:translateZ(60px)}.f6{transform:rotateY(180deg) translateZ(60px)}
 .f2{transform:rotateY(90deg) translateZ(60px)}.f5{transform:rotateY(-90deg) translateZ(60px)}
 .f3{transform:rotateX(90deg) translateZ(60px)}.f4{transform:rotateX(-90deg) translateZ(60px)}
-.shadow{width:120px;height:16px;border-radius:50%;background:#000;opacity:.25;margin-top:36px;filter:blur(5px)}
+.shadow{display:block;width:120px;height:16px;border-radius:50%;background:#000;opacity:.25;margin-top:36px;filter:blur(5px)}
 .hint{text-align:center;color:var(--soy);font-size:14px;margin:10px 0 0}
 .result{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px;min-width:0;overflow:hidden}
 .band{margin:-20px -20px 4px;padding:10px 20px;background:var(--nori-band);color:#F3F4EF;display:flex;justify-content:space-between;align-items:baseline;gap:12px;

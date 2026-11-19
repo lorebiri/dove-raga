@@ -155,7 +155,7 @@ export function drawCard(ctx, data) {
   // piede
   ctx.fillStyle = C.salmon;
   roundRect(ctx, M, H - 330, W - 2 * M, 150, 32); ctx.fill();
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = "#1C2420";
   ctx.font = `52px ${DISPLAY}`;
   ctx.fillText("Tira anche tu →", M + 44, H - 270);
   ctx.font = `700 40px ${BODY}`;
