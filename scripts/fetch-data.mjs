@@ -2,82 +2,127 @@
 // Scarica da Overpass (OpenStreetMap) i locali sushi/giapponesi d'Italia e l'elenco dei comuni,
 // e scrive i file statici in app/data/. Pensato per girare in GitHub Actions una volta a settimana.
 //
-// Rispetto delle regole d'uso di Overpass: una sola richiesta per insieme di dati, in sequenza,
-// con pausa tra le due; un mirror di riserva solo se il primo fallisce; User-Agent descrittivo
-// senza dati personali.
+// Rispetto delle regole d'uso di Overpass:
+// - l'Italia è divisa in zone da 2°: richieste piccole, una alla volta, con una pausa tra l'una e l'altra;
+// - se una zona fallisce si riprova più tardi (attesa crescente) e su un altro server;
+// - User-Agent descrittivo, senza dati personali.
+// I file vengono sostituiti solo se TUTTE le zone sono arrivate e il totale è credibile.
 //
 // Uso: node scripts/fetch-data.mjs [--only places|comuni]
-import { mkdir, writeFile, rm, readFile } from "node:fs/promises";
+import { mkdir, writeFile, rm, readFile, rename } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { PLACES_QUERY, COMUNI_QUERY, buildPlaces, buildComuni } from "./lib/osm.mjs";
+import { zones, placesQuery, comuniQuery, PROVINCE_QUERY, mergeResponses, plausible, buildPlaces, buildComuni } from "./lib/osm.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "app", "data");
-const ENDPOINTS = [
+const ENDPOINTS = (process.env.OVERPASS_URLS || [
   "https://overpass-api.de/api/interpreter",
   "https://overpass.private.coffee/api/interpreter",
-];
+  "https://overpass.kumi.systems/api/interpreter",
+].join(",")).split(",");
 const UA = "DoveRaga-data/1.0 (weekly static export; +https://github.com/lorebiri/dove-raga)";
-// Soglie minime: sotto, il risultato è probabilmente incompleto e si tiene la copia precedente.
+const PAUSE_MS = Number(process.env.PAUSE_MS ?? 4000);
+const ATTEMPTS = 4;
 const MIN_PLACES = Number(process.env.MIN_PLACES ?? 500);
-const MIN_COMUNI = Number(process.env.MIN_COMUNI ?? 7000);
+const MIN_COMUNI = Number(process.env.MIN_COMUNI ?? 7500);
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+const why = e => [e.message, e.cause?.code, e.cause?.message].filter(Boolean).join(" / ");
 
-async function overpass(query) {
-  const errors = [];
-  for (const url of ENDPOINTS) {
-    try {
-      const ctl = new AbortController();
-      const timer = setTimeout(() => ctl.abort(), 20 * 60 * 1000);
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "User-Agent": UA, "Content-Type": "application/x-www-form-urlencoded" },
-        body: "data=" + encodeURIComponent(query),
-        signal: ctl.signal,
-      }).finally(() => clearTimeout(timer));
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      if (json.remark && /error|timed out|runtime/i.test(json.remark)) throw new Error(json.remark);
-      return json;
-    } catch (e) {
-      errors.push(`${new URL(url).host}: ${e.message}`);
-      console.warn(`[dati] ${url} non riuscito: ${e.message}`);
-      await sleep(60_000);
-    }
+async function post(url, query) {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 6 * 60 * 1000);
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "User-Agent": UA, "Accept": "application/json", "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ data: query }),
+      signal: ctl.signal,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    if (!Array.isArray(json.elements)) throw new Error("risposta senza elementi");
+    if (json.remark && /error|timed out|runtime|out of memory/i.test(json.remark)) throw new Error(json.remark.slice(0, 160));
+    return json;
+  } finally {
+    clearTimeout(timer);
   }
-  throw new Error("Overpass non disponibile: " + errors.join("; "));
 }
 
+// Server che ha risposto bene per ultimo: si riparte da lì.
+let preferred = 0;
+async function overpass(query, label) {
+  let lastErr;
+  for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
+    const i = (preferred + attempt) % ENDPOINTS.length;
+    const url = ENDPOINTS[i];
+    try {
+      const json = await post(url, query);
+      preferred = i;
+      return json;
+    } catch (e) {
+      lastErr = e;
+      const wait = 15_000 * 2 ** attempt;
+      console.warn(`[dati] ${label}: ${new URL(url).host} non riuscito (${why(e)}), riprovo tra ${wait / 1000}s`);
+      await sleep(wait);
+    }
+  }
+  throw new Error(`${label}: ${why(lastErr)}`);
+}
+
+async function byZones(kind, build) {
+  const zs = zones();
+  const responses = [];
+  for (const [n, z] of zs.entries()) {
+    const json = await overpass(build(z), `${kind} zona ${n + 1}/${zs.length} [${z}]`);
+    responses.push(json);
+    console.log(`[dati] ${kind} zona ${n + 1}/${zs.length}: ${json.elements.length} elementi`);
+    await sleep(PAUSE_MS);
+  }
+  return mergeResponses(responses);
+}
+
+const readJson = async f => (existsSync(f) ? JSON.parse(await readFile(f, "utf8")) : null);
 const writeJson = (file, obj) => writeFile(file, JSON.stringify(obj) + "\n");
 
 async function places() {
   console.log("[dati] scarico i locali…");
-  const { index, tiles } = buildPlaces(await overpass(PLACES_QUERY));
-  if (index.count < MIN_PLACES) throw new Error(`solo ${index.count} locali (minimo ${MIN_PLACES}): tengo i dati precedenti`);
-  const dir = join(OUT, "places");
+  const { index, tiles } = buildPlaces(await byZones("locali", placesQuery));
+  const prev = await readJson(join(OUT, "index.json"));
+  const bad = plausible(index.count, { min: MIN_PLACES, previous: prev?.count, maxDrop: 0.2 });
+  if (bad) throw new Error(`locali non credibili: ${bad}. Tengo i dati precedenti.`);
+  // Scrive in una cartella nuova e poi la scambia: niente stati a metà.
+  const dir = join(OUT, "places"), tmp = join(OUT, "places.new");
+  await rm(tmp, { recursive: true, force: true });
+  await mkdir(tmp, { recursive: true });
+  for (const [k, t] of Object.entries(tiles)) await writeJson(join(tmp, `${k}.json`), t);
   await rm(dir, { recursive: true, force: true });
-  await mkdir(dir, { recursive: true });
-  for (const [k, t] of Object.entries(tiles)) await writeJson(join(dir, `${k}.json`), t);
+  await rename(tmp, dir);
   await writeJson(join(OUT, "index.json"), index);
   console.log(`[dati] ${index.count} locali in ${Object.keys(tiles).length} riquadri`);
 }
 
 async function comuni() {
-  console.log("[dati] scarico i comuni…");
-  const data = buildComuni(await overpass(COMUNI_QUERY));
-  if (data.c.length < MIN_COMUNI) throw new Error(`solo ${data.c.length} comuni (minimo ${MIN_COMUNI}): tengo i dati precedenti`);
+  console.log("[dati] scarico province e comuni…");
+  const prov = await overpass(PROVINCE_QUERY, "province");
+  await sleep(PAUSE_MS);
+  const com = await byZones("comuni", comuniQuery);
+  const data = buildComuni(mergeResponses([prov, com]));
+  const prev = await readJson(join(OUT, "comuni.json"));
+  const bad = plausible(data.c.length, { min: MIN_COMUNI, previous: prev?.c?.length, maxDrop: 0.05 });
+  if (bad) throw new Error(`comuni non credibili: ${bad}. Tengo i dati precedenti.`);
   await writeJson(join(OUT, "comuni.json"), data);
-  console.log(`[dati] ${data.c.length} comuni`);
+  const withProv = data.c.filter(r => r[3]).length;
+  console.log(`[dati] ${data.c.length} comuni (${withProv} con sigla di provincia)`);
 }
 
 const only = process.argv.includes("--only") ? process.argv[process.argv.indexOf("--only") + 1] : "";
 await mkdir(OUT, { recursive: true });
 let failed = false;
-if (!only || only === "places") await places().catch(e => { console.error("[dati] locali:", e.message); failed = true; });
-if (!only) await sleep(15_000);
-if (!only || only === "comuni") await comuni().catch(e => { console.error("[dati] comuni:", e.message); failed = true; });
+if (!only || only === "places") await places().catch(e => { console.error("[dati] ERRORE", e.message); failed = true; });
+if (!only || only === "comuni") await comuni().catch(e => { console.error("[dati] ERRORE", e.message); failed = true; });
 // Il file di licenza accompagna sempre i dati.
 await writeFile(join(OUT, "LICENSE.txt"), await readFile(join(ROOT, "scripts", "DATA-LICENSE.txt")));
 process.exit(failed ? 1 : 0);

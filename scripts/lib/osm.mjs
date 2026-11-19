@@ -3,17 +3,68 @@
 
 export const TILE_DEG = 1; // deve coincidere con app/js/geo.js
 
-export const PLACES_QUERY = `[out:json][timeout:900];
-area["ISO3166-1"="IT"]["admin_level"="2"]->.it;
-nwr(area.it)["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"sushi|japanese",i];
-out center tags;`;
+// Riquadro dell'Italia (sud, ovest, nord, est) diviso in zone da 2°: tante richieste piccole
+// invece di una enorme, così Overpass non va in timeout.
+export const ITALY_BBOX = [35.2, 6.5, 47.2, 18.6];
+export const ZONE_DEG = 2;
 
-export const COMUNI_QUERY = `[out:json][timeout:900][maxsize:2000000000];
-area["ISO3166-1"="IT"]["admin_level"="2"]->.it;
-rel(area.it)["boundary"="administrative"]["admin_level"="6"];
-out tags;
-rel(area.it)["boundary"="administrative"]["admin_level"="8"];
+/** Zone [s, w, n, e] che coprono il riquadro. */
+export function zones(bbox = ITALY_BBOX, step = ZONE_DEG) {
+  const [S, W, N, E] = bbox;
+  const out = [];
+  for (let s = S; s < N; s += step) for (let w = W; w < E; w += step) {
+    out.push([s, w, Math.min(s + step, N), Math.min(w + step, E)].map(x => Math.round(x * 1000) / 1000));
+  }
+  return out;
+}
+
+const AREA_IT = `area["ISO3166-1"="IT"]["admin_level"="2"]->.it;`;
+const bb = z => `(${z.join(",")})`;
+
+/** Locali sushi/giapponesi in Italia dentro una zona. */
+export function placesQuery(z) {
+  return `[out:json][timeout:180];
+${AREA_IT}
+nwr(area.it)${bb(z)}["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"sushi|japanese",i];
+out center tags;`;
+}
+
+/** Comuni (confini di livello 8) in Italia che toccano una zona. */
+export function comuniQuery(z) {
+  return `[out:json][timeout:300];
+${AREA_IT}
+rel(area.it)${bb(z)}["boundary"="administrative"]["admin_level"="8"];
 out tags center;`;
+}
+
+/** Province (livello 6): solo i tag, per la sigla. Leggera, una richiesta. */
+export const PROVINCE_QUERY = `[out:json][timeout:180];
+${AREA_IT}
+rel(area.it)["boundary"="administrative"]["admin_level"="6"];
+out tags;`;
+
+/** Unisce le risposte di più zone togliendo gli elementi ripetuti (stesso tipo e id). */
+export function mergeResponses(responses) {
+  const seen = new Set();
+  const elements = [];
+  for (const r of responses) for (const el of r?.elements || []) {
+    const k = el.type + el.id;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    elements.push(el);
+  }
+  return { elements };
+}
+
+/**
+ * Il nuovo totale è credibile? Deve superare il minimo e non crollare
+ * rispetto all'ultima copia buona (oltre la tolleranza indicata).
+ */
+export function plausible(count, { min, previous = 0, maxDrop = 0.2 }) {
+  if (count < min) return `solo ${count} (minimo ${min})`;
+  if (previous && count < previous * (1 - maxDrop)) return `${count} contro ${previous} della copia precedente (calo oltre ${Math.round(maxDrop * 100)}%)`;
+  return "";
+}
 
 const r5 = x => Math.round(x * 1e5) / 1e5;
 const clean = s => String(s ?? "").replace(/\s+/g, " ").trim();
