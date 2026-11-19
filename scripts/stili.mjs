@@ -12,7 +12,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const STILI = join(ROOT, "docs", "stili");
 const PORT = 4198;
 const BASE = `http://localhost:${PORT}/dove-raga/`;
-const DIRS = process.argv.slice(2).length ? process.argv.slice(2) : ["a-capsula", "b-sticker", "c-y2k"];
+const DIRS = process.argv.slice(2).length ? process.argv.slice(2) : ["b-sticker"];
 const PHONE = { viewport: { width: 412, height: 915 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, locale: "it-IT" };
 
 const server = spawn(process.execPath, [join(ROOT, "scripts", "serve.mjs")], { env: { ...process.env, PORT: String(PORT), SITE_DIR: "docs/stili" }, stdio: "ignore" });

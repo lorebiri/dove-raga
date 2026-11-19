@@ -1,17 +1,11 @@
-# Direzioni grafiche per «Dove raga?»
+# Direzione grafica di «Dove raga?»
 
-Tre proposte nette da confrontare. Ognuna ha logo (orizzontale + simbolo), icona dell'app (anche maskable),
-foto profilo rotonda, schermata principale, risultato e cartolina 9:16.
+Scelta: **B · Sticker** (giallo acido, adesivi col bordo bianco, nigiri-mascotte con gli occhi, tono da chat di gruppo).
+È lo stile applicato all'app in `app/`.
 
-| Direzione | Tavola riassuntiva | Idea |
-|---|---|---|
-| A · Capsula | [tavola-a-capsula.png](tavola-a-capsula.png) | Macchinetta a sorpresa: giri la manovella, esce la capsula col locale. Viola notte, lime acido, rosa shocking. |
-| B · Sticker | [tavola-b-sticker.png](tavola-b-sticker.png) | Pacchetto di adesivi su giallo acido, nigiri con gli occhi, tono da chat di gruppo. |
-| C · Brutal Y2K | [tavola-c-y2k.png](tavola-c-y2k.png) | Nero, verde acido e blu elettrico, scritte enormi, monospazio, nastro che scorre; dado coi puntini a punto di domanda. |
+- Tavola riassuntiva: [tavola-b-sticker.png](tavola-b-sticker.png) (logo, simbolo, icona, maskable, home del telefono, foto profilo, schermate, cartolina 9:16).
+- Proposta statica: `b-sticker/index.html` (con `#risultato` per lo stato del risultato) e `b-sticker/cartolina.html`.
+- Caratteri (SIL OFL): Bricolage Grotesque e Rubik.
 
-- Le pagine (`<direzione>/index.html`, con `#risultato` per lo stato del risultato) sono statiche e cliccabili: il pulsante del tiro porta al risultato.
-- Screenshot su telefono (412×915, deviceScaleFactor 2) in `<direzione>/screenshot/`.
-- Tutte e tre passano il controllo di contrasto AA (axe) e fermano le animazioni con «riduci movimento».
-- Caratteri ospitati qui (`fonts/`, licenza SIL OFL): Lilita One, Rubik, Bricolage Grotesque, Anton, Space Mono.
-- Simboli e loghi disegnati da zero. Nome del locale e dati sono di esempio.
-- Rigenerare: `node scripts/stili.mjs`
+Le altre due proposte (A · Capsula, C · Brutal Y2K) sono in `archivio/` per memoria.
+Rigenerare gli screenshot: `node scripts/stili.mjs [b-sticker]` (le pagine in archivio non sono più rigenerate).

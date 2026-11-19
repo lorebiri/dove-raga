@@ -23,7 +23,7 @@ const server = spawn(process.execPath, [join(ROOT, "scripts", "serve.mjs")], { e
 await new Promise(r => setTimeout(r, 600));
 
 const browser = await chromium.launch();
-const phone = devices["Pixel 7"];
+const phone = { ...devices["Pixel 7"], deviceScaleFactor: 2 };
 const shot = async (page, name) => { await page.screenshot({ path: join(OUT, name) }); console.log("  ", name); };
 
 async function session(scheme, fn) {
@@ -36,10 +36,10 @@ async function session(scheme, fn) {
 
 console.log(`dati: ${real ? "veri (app/data)" : "di prova (test/fixtures)"}`);
 try {
-  await session("dark", async page => {
+  await session("light", async page => {
     await page.goto(BASE);
     await page.evaluate(() => document.fonts.ready);
-    await shot(page, "01-home-scuro.png");
+    await shot(page, "01-home.png");
     await page.getByRole("button", { name: "Usa la mia posizione" }).click();
     await page.getByRole("button", { name: "Tira il dado" }).waitFor({ state: "visible" });
     await page.waitForFunction(() => !document.getElementById("stage").disabled);
@@ -54,7 +54,7 @@ try {
 
     // cartolina 9:16
     const dl = page.waitForEvent("download");
-    await page.getByRole("button", { name: "Cartolina per le storie" }).click();
+    await page.getByRole("button", { name: "Sticker per le storie" }).click();
     const file = await (await dl).path();
     const { readFile } = await import("node:fs/promises");
     await writeFile(join(OUT, "05-cartolina-9x16.png"), await readFile(file));
@@ -79,12 +79,12 @@ try {
     await box.fill(real ? CITY.slice(0, 4) : "mil");
     await page.getByRole("option").first().waitFor();
     await box.press("ArrowDown");
-    await shot(page, "08-suggerimenti-citta-chiaro.png");
+    await shot(page, "08-suggerimenti-citta.png");
     await box.press("Enter");
     await page.waitForFunction(() => /posti? entro/.test(document.getElementById("status").textContent));
     await page.locator("#listBox summary").click();
     await page.locator("#listBox").scrollIntoViewIfNeeded();
-    await shot(page, "09-elenco-ed-esclusioni-chiaro.png");
+    await shot(page, "09-elenco-ed-esclusioni.png");
   });
 } finally {
   await browser.close();

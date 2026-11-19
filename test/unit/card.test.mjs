@@ -43,11 +43,14 @@ test("drawCard: formato 9:16 e contenuti", () => {
   const out = drawCard(ctx, { name: "Nigiri Prova Uno", dist: "1,2 km", kind: "Sushi", url: "lorebiri.github.io/dove-raga" });
   const all = ctx.texts.map(x => x.t).join("\n");
   assert.equal(out.nameLines.join(" "), "Nigiri Prova Uno");
-  assert.match(all, /SUSHI · A 1,2 KM/);
+  assert.match(all, /a 1,2 km/);
+  assert.match(all, /^sushi$/m);
+  assert.match(all, /IL DADO HA DECISO/);
   assert.match(all, /lorebiri\.github\.io\/dove-raga/);
   assert.match(all, /OpenStreetMap/);
-  assert.match(all, /raga/);
-  assert.ok(out.nameLines.length <= 2);
+  assert.match(all, /dove raga\?/);
+  assert.ok(out.tagBottom < CARD_H - 300, "le etichette non toccano il piede");
+  assert.ok(out.nameLines.length <= 3);
   for (const t of ctx.texts) {
     assert.ok(t.x >= 0 && t.y > 0 && t.y < CARD_H, `fuori dalla cartolina: ${t.t}`);
     const size = parseFloat(t.font.match(/(\d+)px/)[1]);
@@ -58,8 +61,9 @@ test("drawCard: formato 9:16 e contenuti", () => {
 test("drawCard: nome lunghissimo resta dentro e non copre il piede", () => {
   const ctx = fakeCtx();
   const out = drawCard(ctx, { name: "Uramaki Quattro: il nome lunghissimo che va a capo più volte sulla cartolina ".repeat(3), dist: "", kind: "Giapponese", url: "x" });
-  assert.ok(out.nameLines.length <= 4);
-  const nameYs = ctx.texts.filter(t => out.nameLines.includes(t.t)).map(t => t.y);
-  assert.ok(Math.max(...nameYs) < CARD_H - 450);
-  assert.ok(ctx.texts.some(t => t.t === "GIAPPONESE"));
+  assert.ok(out.nameLines.length <= 3);
+  assert.ok(out.nameLines.at(-1).endsWith("…"));
+  assert.ok(out.tagBottom < CARD_H - 300, "le etichette non toccano il piede");
+  assert.ok(ctx.texts.some(t => t.t === "giapponese"));
+  assert.ok(!ctx.texts.some(t => /^a /.test(t.t)), "senza distanza niente etichetta");
 });

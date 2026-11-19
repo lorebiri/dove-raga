@@ -3,13 +3,9 @@
 export const CARD_W = 1080;
 export const CARD_H = 1920;
 
-const C = {
-  bg: "#141A17", bg2: "#1E2622", ink: "#EEF0EA", soy: "#A3ABA4",
-  salmon: "#F0866D", salmon2: "#E2694F", salmonLight: "#F59A6B",
-  grain: "#F6F3EA", grainShade: "#DAD5C6", pip: "#1C2420", stripe: "#FFF4EC",
-};
-const DISPLAY = '"Dela Gothic One", "Arial Black", sans-serif';
-const BODY = '"Zen Kaku Gothic New", system-ui, sans-serif';
+const C = { y: "#FFE600", ink: "#121212", sal: "#FF5A36", mint: "#00D68F", blue: "#2B4BFF", white: "#FFFFFF", soft: "#3D3600" };
+const DISPLAY = '"Bricolage", "Arial Black", sans-serif';
+const BODY = '"Rubik", system-ui, sans-serif';
 
 /** Va a capo per parole; spezza le parole troppo lunghe. measure(testo) → larghezza. */
 export function wrapLines(measure, text, maxW) {
@@ -32,14 +28,15 @@ export function wrapLines(measure, text, maxW) {
 }
 
 /** Sceglie la dimensione più grande che fa stare il testo in maxLines righe. */
-export function fitText(ctx, text, maxW, maxLines, sizes, family) {
+export function fitText(ctx, text, maxW, maxLines, sizes, family, weight = "") {
+  const f = size => `${weight} ${size}px ${family}`.trim();
   for (const size of sizes) {
-    ctx.font = `${size}px ${family}`;
+    ctx.font = f(size);
     const lines = wrapLines(t => ctx.measureText(t).width, text, maxW);
     if (lines.length <= maxLines) return { size, lines };
   }
   const size = sizes[sizes.length - 1];
-  ctx.font = `${size}px ${family}`;
+  ctx.font = f(size);
   const lines = wrapLines(t => ctx.measureText(t).width, text, maxW).slice(0, maxLines);
   const last = lines.length - 1;
   while (lines[last].length > 1 && ctx.measureText(lines[last] + "…").width > maxW) lines[last] = lines[last].slice(0, -1);
@@ -57,126 +54,112 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-/** Il dado-nigiri dell'icona, disegnato in un quadrato di lato s con angolo in (x, y). */
-function drawNigiri(ctx, x, y, s) {
-  const k = s / 512;
+/** Adesivo: rettangolo arrotondato col bordo nero e l'ombra piena, ruotato attorno all'angolo (x, y). */
+function sticker(ctx, x, y, w, h, deg, fill, draw, { r = 44, shadow = C.ink } = {}) {
   ctx.save();
   ctx.translate(x, y);
-  ctx.scale(k, k);
-  ctx.fillStyle = "rgba(0,0,0,.35)";
-  ctx.beginPath(); ctx.ellipse(256, 440, 150, 22, 0, 0, Math.PI * 2); ctx.fill();
-  const side = (pts, fill) => {
-    ctx.beginPath(); pts.forEach(([a, b], i) => (i ? ctx.lineTo(a, b) : ctx.moveTo(a, b))); ctx.closePath();
-    ctx.fillStyle = fill; ctx.strokeStyle = fill; ctx.lineWidth = 18; ctx.lineJoin = "round"; ctx.fill(); ctx.stroke();
-  };
-  side([[112, 215], [256, 290], [256, 430], [112, 355]], C.grain);
-  side([[256, 290], [400, 215], [400, 355], [256, 430]], C.grainShade);
-  ctx.fillStyle = C.pip;
-  const pips = (m, pts, rx, ry) => {
-    for (const [u, v] of pts) {
-      ctx.save(); ctx.transform(...m); ctx.beginPath(); ctx.ellipse(u, v, rx, ry, 0, 0, Math.PI * 2); ctx.restore(); ctx.fill();
-    }
-  };
-  pips([144, 75, 0, 140, 112, 215], [[.3, .45], [.7, .8]], .11, .1);
-  pips([144, -75, 0, 140, 256, 290], [[.24, .34], [.5, .62], [.76, .88]], .1, .09);
-  const slice = () => {
-    ctx.beginPath(); ctx.moveTo(96, 214);
-    ctx.quadraticCurveTo(170, 158, 256, 126); ctx.quadraticCurveTo(342, 158, 416, 214);
-    ctx.quadraticCurveTo(350, 305, 256, 326); ctx.quadraticCurveTo(162, 305, 96, 214); ctx.closePath();
-  };
-  const g = ctx.createLinearGradient(96, 126, 416, 326);
-  g.addColorStop(0, C.salmonLight); g.addColorStop(1, C.salmon2);
-  slice(); ctx.fillStyle = g; ctx.fill();
-  ctx.save(); slice(); ctx.clip();
-  ctx.strokeStyle = C.stripe; ctx.globalAlpha = .85; ctx.lineWidth = 11; ctx.lineCap = "round";
-  for (const [a, b, c, d, e, f] of [[60, 230, 160, 190, 300, 110], [110, 280, 220, 235, 360, 150], [170, 330, 280, 285, 420, 200]]) {
-    ctx.beginPath(); ctx.moveTo(a, b); ctx.quadraticCurveTo(c, d, e, f); ctx.stroke();
-  }
-  ctx.restore();
+  ctx.rotate(deg * Math.PI / 180);
+  roundRect(ctx, 16, 16, w, h, r); ctx.fillStyle = shadow; ctx.fill();
+  roundRect(ctx, 0, 0, w, h, r); ctx.fillStyle = fill; ctx.fill();
+  ctx.lineWidth = 8; ctx.strokeStyle = C.ink; ctx.stroke();
+  draw?.();
   ctx.restore();
 }
 
 /**
- * Disegna la cartolina. data = { name, dist, kind, url }.
+ * Disegna la cartolina. data = { name, dist, kind, url }; mascot è un'immagine già caricata (facoltativa).
  * dist è già formattata ("1,2 km") oppure vuota; kind è "Sushi" o "Giapponese".
  */
-export function drawCard(ctx, data) {
-  const W = CARD_W, H = CARD_H, M = 96;
+export function drawCard(ctx, data, mascot = null) {
+  const W = CARD_W, H = CARD_H, M = 70;
   ctx.textBaseline = "alphabetic";
   ctx.textAlign = "left";
 
-  const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, C.bg2); bg.addColorStop(1, C.bg);
-  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  // sfondo giallo a puntini
+  ctx.fillStyle = C.y; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = "rgba(0,0,0,.08)";
+  for (let y = 24; y < H; y += 48) for (let x = 24; x < W; x += 48) { ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill(); }
 
-  // strisce del tappetino di bambù in alto
-  ctx.fillStyle = "rgba(255,255,255,.035)";
-  for (let y = 0; y < 300; y += 18) ctx.fillRect(0, y, W, 2);
+  // marchio e fumetto
+  ctx.font = `800 70px ${DISPLAY}`;
+  const brandW = ctx.measureText("dove raga?").width + 68;
+  sticker(ctx, M, 100, brandW, 110, -3, C.white, () => {
+    ctx.fillStyle = C.ink; ctx.font = `800 70px ${DISPLAY}`; ctx.fillText("dove raga?", 34, 78);
+  });
+  ctx.font = `700 46px ${BODY}`;
+  const bub = "deciso. non si discute!";
+  const bubW = ctx.measureText(bub).width + 72;
+  sticker(ctx, W - M - bubW, 268, bubW, 96, 2, C.blue, () => {
+    ctx.fillStyle = C.white; ctx.font = `700 46px ${BODY}`; ctx.fillText(bub, 36, 64);
+  }, { r: 40 });
 
-  // marchio
-  ctx.fillStyle = C.soy;
-  ctx.font = `700 34px ${BODY}`;
-  ctx.fillText("おまかせ · DECIDE IL DADO", M, 190);
-  ctx.font = `120px ${DISPLAY}`;
-  ctx.fillStyle = C.ink;
-  ctx.fillText("Dove ", M, 330);
-  const wDove = ctx.measureText("Dove ").width;
-  ctx.fillStyle = C.salmon;
-  ctx.fillText("raga", M + wDove, 330);
-  const wRaga = ctx.measureText("raga").width;
-  ctx.fillStyle = C.ink;
-  ctx.fillText("?", M + wDove + wRaga, 330);
-
-  // dado
-  drawNigiri(ctx, (W - 520) / 2, 400, 520);
+  // mascotte
+  if (mascot) {
+    ctx.save(); ctx.translate(540, 650); ctx.rotate(4 * Math.PI / 180);
+    ctx.drawImage(mascot, -250, -250, 500, 500);
+    ctx.restore();
+  }
 
   // risultato
-  ctx.fillStyle = C.soy;
-  ctx.font = `700 44px ${BODY}`;
-  ctx.fillText("Il dado ha deciso:", M, 1060);
+  const inner = W - 2 * M - 100;
+  const fit = fitText(ctx, data.name, inner, 3, [132, 116, 100, 88, 76, 66], DISPLAY, "800");
+  const lh = Math.round(fit.size * 0.95);
+  const boxH = 44 + 56 + 30 + lh * fit.lines.length + 34;
+  const top = 930;
+  sticker(ctx, M, top, W - 2 * M, boxH, -2, C.white, () => {
+    ctx.font = `800 36px ${BODY}`;
+    const lab = "IL DADO HA DECISO";
+    const lw = ctx.measureText(lab).width + 36;
+    roundRect(ctx, 50, 44, lw, 56, 12); ctx.fillStyle = C.ink; ctx.fill();
+    ctx.fillStyle = C.y; ctx.fillText(lab, 68, 85);
+    ctx.fillStyle = C.ink; ctx.font = `800 ${fit.size}px ${DISPLAY}`;
+    let y = 44 + 56 + 30 + fit.size * 0.8;
+    for (const line of fit.lines) { ctx.fillText(line, 50, y); y += lh; }
+  });
 
-  const fit = fitText(ctx, data.name, W - 2 * M, 4, [118, 104, 92, 80, 70, 62], DISPLAY);
-  ctx.font = `${fit.size}px ${DISPLAY}`;
-  ctx.fillStyle = C.ink;
-  const lh = Math.round(fit.size * 1.12);
-  let y = 1060 + 40 + fit.size;
-  for (const line of fit.lines) { ctx.fillText(line, M, y); y += lh; }
+  // etichette: distanza e tipo
+  let tx = M + 20;
+  const tagY = top + boxH + 50;
+  for (const [text, fill, ink, deg] of [[data.dist && `a ${data.dist}`, C.mint, C.ink, 3], [data.kind.toLowerCase(), C.sal, C.ink, -4]]) {
+    if (!text) continue;
+    ctx.font = `800 50px ${BODY}`;
+    const w = ctx.measureText(text).width + 68;
+    sticker(ctx, tx, tagY, w, 92, deg, fill, () => { ctx.fillStyle = ink; ctx.font = `800 50px ${BODY}`; ctx.fillText(text, 34, 64); }, { r: 30 });
+    tx += w + 50;
+  }
 
-  // etichetta tipo · distanza
-  const pill = [data.kind, data.dist && `a ${data.dist}`].filter(Boolean).join(" · ").toUpperCase();
-  ctx.font = `700 40px ${BODY}`;
-  const pw = ctx.measureText(pill).width + 64;
-  const py = y - lh + fit.size * 0.35 + 30;
-  roundRect(ctx, M, py, pw, 76, 38);
-  ctx.fillStyle = "#3A2420"; ctx.fill();
-  ctx.fillStyle = C.salmon;
-  ctx.fillText(pill, M + 32, py + 52);
+  // invito
+  sticker(ctx, M, H - 300, W - 2 * M, 170, 0, C.ink, () => {
+    ctx.fillStyle = C.y; ctx.font = `800 62px ${DISPLAY}`; ctx.fillText("tira anche tu →", 44, 78);
+    ctx.fillStyle = C.white; ctx.font = `700 40px ${BODY}`; ctx.fillText(data.url, 44, 134);
+  }, { r: 40, shadow: C.sal });
+  ctx.fillStyle = C.soft;
+  ctx.font = `400 26px ${BODY}`;
+  ctx.fillText("Dati © contributori OpenStreetMap (ODbL)", M, H - 50);
+  return { nameSize: fit.size, nameLines: fit.lines, nameBottom: top + boxH, tagBottom: tagY + 92 };
+}
 
-  // piede
-  ctx.fillStyle = C.salmon;
-  roundRect(ctx, M, H - 330, W - 2 * M, 150, 32); ctx.fill();
-  ctx.fillStyle = "#1C2420";
-  ctx.font = `52px ${DISPLAY}`;
-  ctx.fillText("Tira anche tu →", M + 44, H - 270);
-  ctx.font = `700 40px ${BODY}`;
-  ctx.fillText(data.url, M + 44, H - 210);
-  ctx.fillStyle = C.soy;
-  ctx.font = `30px ${BODY}`;
-  ctx.fillText("Dati © contributori OpenStreetMap (ODbL)", M, H - 110);
-  return { nameSize: fit.size, nameLines: fit.lines };
+function loadImage(doc, src) {
+  return new Promise(res => {
+    const img = new (doc.defaultView.Image)();
+    img.onload = () => res(img);
+    img.onerror = () => res(null);
+    img.src = src;
+  });
 }
 
 /** Crea la cartolina come PNG (Blob) nel browser. */
-export async function renderCardBlob(doc, data) {
+export async function renderCardBlob(doc, data, mascotSrc = "") {
   if (doc.fonts?.load) {
     await Promise.all([
-      doc.fonts.load(`120px "Dela Gothic One"`),
-      doc.fonts.load(`700 40px "Zen Kaku Gothic New"`),
-      doc.fonts.load(`400 30px "Zen Kaku Gothic New"`),
+      doc.fonts.load(`800 120px "Bricolage"`),
+      doc.fonts.load(`700 40px "Rubik"`),
+      doc.fonts.load(`800 40px "Rubik"`),
     ]).catch(() => {});
   }
+  const mascot = mascotSrc ? await loadImage(doc, mascotSrc) : null;
   const canvas = doc.createElement("canvas");
   canvas.width = CARD_W; canvas.height = CARD_H;
-  drawCard(canvas.getContext("2d"), data);
+  drawCard(canvas.getContext("2d"), data, mascot);
   return new Promise((res, rej) => canvas.toBlob(b => (b ? res(b) : rej(new Error("toBlob"))), "image/png"));
 }

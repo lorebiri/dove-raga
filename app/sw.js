@@ -3,9 +3,9 @@
 const BUILD = "dev";
 const CACHE = "dove-raga-" + BUILD;
 const SHELL = [
-  "./", "index.html", "manifest.webmanifest", "icon.svg", "icon-180.png", "icon-192.png", "icon-512.png", "icon-maskable-512.png",
+  "./", "index.html", "manifest.webmanifest", "icon.svg", "mascotte.svg", "icon-180.png", "icon-192.png", "icon-512.png", "icon-maskable-512.png",
   "js/app.js", "js/geo.js", "js/data.js", "js/pick.js", "js/link.js", "js/comuni.js", "js/card.js",
-  "fonts/dela-gothic-one.woff2", "fonts/zen-kaku-gothic-new-400.woff2", "fonts/zen-kaku-gothic-new-700.woff2",
+  "fonts/bricolage-800.woff2", "fonts/rubik-var.woff2",
 ];
 const NET_TIMEOUT = 3500;
 

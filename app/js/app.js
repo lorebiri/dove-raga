@@ -16,7 +16,7 @@ const reduceMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matche
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 let km = [2, 5, 10, 25].includes(store.get("km", 5)) ? store.get("km", 5) : 5;
-let places = [], last = null, rolling = false, origin = null, rx = -24, ry = 32;
+let places = [], last = null, rolling = false, origin = null;
 const excluded = new Set(store.get("excluded", []));
 
 // ---------- dati ----------
@@ -42,17 +42,7 @@ function getComuni() {
   return comuniP;
 }
 
-// ---------- dado ----------
-const pipsMap = { 1: [5], 2: [1, 9], 3: [1, 5, 9], 4: [1, 3, 7, 9], 5: [1, 3, 5, 7, 9], 6: [1, 3, 4, 6, 7, 9] };
-const cube = $("cube");
-for (let f = 1; f <= 6; f++) {
-  const d = document.createElement("span");
-  d.className = "face f" + f + (f === 3 ? " top" : "");
-  if (f !== 3) for (let c = 1; c <= 9; c++) { const s = document.createElement("span"); if (pipsMap[f].includes(c)) s.className = "pip"; d.appendChild(s); }
-  cube.appendChild(d);
-}
-const faceRot = [[0, 0], [0, -90], [0, 90], [0, 180]];
-
+// ---------- messaggi ----------
 function setStatus(t, err) { const s = $("status"); s.textContent = t; s.classList.toggle("err", !!err); }
 function setHint(t) { $("hint").textContent = t; }
 let toastTimer;
@@ -149,10 +139,12 @@ async function search(o) {
   last = null; renderList();
   const n = inPlay(places, excluded).length;
   if (!places.length) {
+    $("pill").textContent = "";
     setStatus(`Zero sushi entro ${km} km da ${o.label}. Allargate il raggio.`, true);
     setHint("Niente da tirare qui"); return;
   }
   setStatus(`${places.length === 1 ? "1 posto" : places.length + " posti"} entro ${km} km da ${o.label}.`);
+  $("pill").textContent = `${n} nel dado`;
   $("stage").disabled = n === 0;
   setHint(n ? "Tocca il nigiri per tirare" : "Li avete scartati tutti. Esigenti.");
 }
@@ -160,6 +152,7 @@ async function search(o) {
 function renderList() {
   $("listBox").hidden = !places.length;
   $("count").textContent = inPlay(places, excluded).length;
+  if (places.length) $("pill").textContent = `${inPlay(places, excluded).length} nel dado`;
   $("list").innerHTML = places.map((p, i) => {
     const out = excluded.has(p.key);
     return `<li class="${out ? "out" : ""}"><span class="n">${esc(p.n)} · ${fmtKm(p.d)}</span><button type="button" data-i="${i}" aria-label="${out ? "Rimetti" : "Escludi"} ${esc(p.n)}">${out ? "rimetti" : "escludi"}</button></li>`;
@@ -185,18 +178,16 @@ function roll() {
   const seed = newSeed();
   const pick = pickPlace(pool, seed, last?.key);
   last = pick;
-  const [fx, fy] = faceRot[seed % 4];
-  const extra = 2 + ((seed >>> 3) % 2);
-  rx = Math.ceil(rx / 360) * 360 + 360 * extra + fx - 24;
-  ry = Math.ceil(ry / 360) * 360 + 360 * extra + fy + 32;
-  cube.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+  const stage = $("stage");
+  stage.classList.remove("rolling"); void stage.offsetWidth; stage.classList.add("rolling");
   setHint("Il nigiri rotola…");
   if (navigator.vibrate && !reduceMotion()) try { navigator.vibrate(30); } catch { /* ignora */ }
   setTimeout(() => {
     show(pick, { zone: origin?.zone || "" });
     rolling = false;
     setHint("Non vi convince? Tocca per ritirare");
-  }, reduceMotion() ? 50 : 1300);
+    stage.classList.remove("rolling");
+  }, reduceMotion() ? 50 : 900);
 }
 $("stage").addEventListener("click", roll);
 
@@ -209,21 +200,21 @@ function show(r, { zone = "", group = false } = {}) {
   const el = $("result");
   const dist = Number.isFinite(r.d) ? fmtKm(r.d) : "";
   const web = r.w ? `<a href="${esc(r.w)}" target="_blank" rel="noopener">${esc(r.w.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, ""))}</a>` : "";
-  const rows = [dist && ["Distanza", dist], r.a && ["Dove", esc(r.a)], r.h && ["Orari", esc(r.h)], r.t && ["Telefono", esc(r.t)], web && ["Sito", web]].filter(Boolean);
-  el.innerHTML = `<div class="band"><b id="resultTitle">${group ? "Il gruppo ha deciso" : "Il dado ha parlato"}</b><span>${group ? (zone ? esc(zone) : "verdetto") : esc(dist)}</span></div>
-    <span class="tag">${r.sushi ? "Sushi" : "Giapponese"}${r.take ? " · asporto" : ""}</span>
+  const rows = [r.a && ["Dove", esc(r.a)], r.h && ["Orari", esc(r.h)], r.t && ["Tel", esc(r.t)], web && ["Sito", web]].filter(Boolean);
+  const tags = [`<span class="tag">${r.sushi ? "🍣 sushi" : "🍜 giapponese"}</span>`, dist && `<span class="tag m">📍 ${esc(dist)}</span>`, r.take && `<span class="tag w">asporto</span>`].filter(Boolean);
+  el.innerHTML = `<img class="who" src="mascotte.svg" alt="">
+    <span class="lbl" id="resultTitle">${group ? "Il gruppo ha deciso" : "il dado ha deciso"}${group && zone ? `<span>${esc(zone)}</span>` : ""}</span>
     <h2 id="placeName" tabindex="-1">${esc(r.n)}</h2>
+    <div class="tags">${tags.join("")}</div>
     ${rows.length ? `<dl class="meta">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>` : ""}
-    <div class="actions">
-      <a class="btn primary" href="${mapsUrl(r)}" target="_blank" rel="noopener">Portami lì</a>
-      ${r.t ? `<a class="btn ghost" href="tel:${esc(r.t.replace(/[^\d+]/g, ""))}">Chiama</a>` : ""}
-      ${group ? `<button class="btn ghost" type="button" id="again">Tira anche tu</button>` : `<button class="btn ghost" type="button" id="skip">Nah, ritira</button>`}
-    </div>
-    <div class="actions share">
-      <button class="btn salmon" type="button" id="shareLink">Manda al gruppo</button>
-      <button class="btn ghost" type="button" id="shareCard">Cartolina per le storie</button>
+    <div class="grid2">
+      <a class="btn blue" href="${mapsUrl(r)}" target="_blank" rel="noopener">Portami lì</a>
+      ${group ? `<button class="btn" type="button" id="again">Tira anche tu</button>` : `<button class="btn" type="button" id="skip">Nah, ritira</button>`}
+      ${r.t ? `<a class="btn" href="tel:${esc(r.t.replace(/[^\d+]/g, ""))}" style="grid-column:1/-1">📞 Chiama</a>` : ""}
     </div>`;
+  el.classList.add("done");
   el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+  $("share").hidden = false;
   $("skip")?.addEventListener("click", () => {
     excluded.add(r.key); store.set("excluded", [...excluded]); renderList();
     if (inPlay(places, excluded).length) roll();
@@ -234,10 +225,10 @@ function show(r, { zone = "", group = false } = {}) {
     $("geo").focus();
     setStatus("Dite dove siete, poi tirate il dado.");
   });
-  $("shareLink").addEventListener("click", shareLink);
-  $("shareCard").addEventListener("click", shareCard);
   setStatus(`${group ? "Il gruppo ha deciso" : "Il dado ha scelto"}: ${r.n}${dist ? ", a " + dist : ""}.`);
 }
+$("shareLink").addEventListener("click", () => shareLink());
+$("shareCard").addEventListener("click", () => shareCard());
 
 function link() { return shareUrl(location.href, current.place, current.zone); }
 
@@ -248,7 +239,7 @@ async function copy(text) {
 async function shareLink() {
   if (!current) return;
   const url = link();
-  const text = `Il dado ha deciso: ${current.place.n}. Si va lì.`;
+  const text = `il dado ha deciso: ${current.place.n}. non si discute 🤝`;
   if (navigator.share) {
     try { await navigator.share({ title: "Dove raga?", text, url }); return; }
     catch (e) { if (e.name === "AbortError") return; }
@@ -263,20 +254,20 @@ async function shareCard() {
     const r = current.place;
     const blob = await renderCardBlob(document, {
       name: r.n, dist: Number.isFinite(r.d) ? fmtKm(r.d) : "", kind: r.sushi ? "Sushi" : "Giapponese", url: APP_URL_LABEL,
-    });
+    }, "mascotte.svg");
     const file = new File([blob], "dove-raga.png", { type: "image/png" });
     const url = link();
     if (navigator.canShare?.({ files: [file] })) {
-      try { await navigator.share({ files: [file], title: "Dove raga?", text: `Il dado ha deciso: ${r.n} ${url}` }); return; }
+      try { await navigator.share({ files: [file], title: "Dove raga?", text: `il dado ha deciso: ${r.n} ${url}` }); return; }
       catch (e) { if (e.name === "AbortError") return; }
     }
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = "dove-raga.png";
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 10000);
-    toast(await copy(url) ? "Cartolina scaricata e link copiato" : "Cartolina scaricata");
+    toast(await copy(url) ? "Sticker scaricato e link copiato" : "Sticker scaricato");
   } catch {
-    toast("Cartolina non riuscita, riprova");
+    toast("Sticker non riuscito, riprova");
   } finally { btn.disabled = false; }
 }
 

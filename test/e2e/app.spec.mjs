@@ -20,7 +20,7 @@ test("si apre senza richieste esterne, con titolo e attribuzione OSM", async ({ 
   const external = await useFixtureData(page);
   await page.goto("./");
   await expect(page).toHaveTitle(/Dove raga\?/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Dove raga?");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/dove\s*raga\?/i);
   await expect(page.getByRole("link", { name: "contributori OpenStreetMap" })).toBeVisible();
   await expect(page.locator("#dataDate")).toContainText("16/11/2026");
   await rollFromHere(page);
@@ -34,7 +34,7 @@ test("posizione → tiro → risultato con dettagli", async ({ page }) => {
   await page.goto("./");
   const name = await rollFromHere(page);
   expect(NAMES).toContain(name);
-  await expect(page.locator("#result .meta")).toContainText("Distanza");
+  await expect(page.locator("#result .tags")).toContainText(/📍 \d/);
   await expect(page.getByRole("link", { name: "Portami lì" })).toHaveAttribute("href", /google\.com\/maps/);
   await expect(page.locator("#status")).toContainText(`Il dado ha scelto: ${name}`);
 });
@@ -143,7 +143,8 @@ test("link di gruppo manomesso: nessun HTML eseguito", async ({ page }) => {
   await page.goto("./#g=" + evil);
   await expect(page.locator("#placeName")).toHaveText("<img src=x onerror=window.pwned=1>");
   expect(await page.evaluate(() => window.pwned)).toBeUndefined();
-  await expect(page.locator("#result img")).toHaveCount(0);
+  await expect(page.locator("#result img")).toHaveCount(1);
+  await expect(page.locator("#result img")).toHaveAttribute("src", "mascotte.svg");
 });
 
 test("cartolina 9:16: scaricata come PNG 1080×1920 e link copiato", async ({ page, context }) => {
@@ -153,12 +154,12 @@ test("cartolina 9:16: scaricata come PNG 1080×1920 e link copiato", async ({ pa
   await page.goto("./");
   await rollFromHere(page);
   const dl = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Cartolina per le storie" }).click();
+  await page.getByRole("button", { name: "Sticker per le storie" }).click();
   const download = await dl;
   expect(download.suggestedFilename()).toBe("dove-raga.png");
   const buf = await readFile(await download.path());
   expect(pngSize(buf)).toEqual({ width: 1080, height: 1920 });
-  await expect(page.locator("#toast")).toContainText("Cartolina scaricata");
+  await expect(page.locator("#toast")).toContainText("Sticker scaricato");
 });
 
 test("cartolina: usa la condivisione di sistema quando c'è", async ({ page }) => {
@@ -170,12 +171,12 @@ test("cartolina: usa la condivisione di sistema quando c'è", async ({ page }) =
   });
   await page.goto("./");
   const name = await rollFromHere(page);
-  await page.getByRole("button", { name: "Cartolina per le storie" }).click();
+  await page.getByRole("button", { name: "Sticker per le storie" }).click();
   await expect.poll(() => page.evaluate(() => window.__shared)).not.toBeNull();
   const s = await page.evaluate(() => window.__shared);
   expect(s.n).toBe(1);
   expect(s.type).toBe("image/png");
-  expect(s.size).toBeGreaterThan(20000);
+  expect(s.size).toBeGreaterThan(40000);
   expect(s.text).toContain(name);
 });
 

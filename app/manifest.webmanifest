@@ -1,15 +1,15 @@
 {
   "name": "Dove raga?",
   "short_name": "Dove raga?",
-  "description": "Sushi stasera? Decide il dado: sceglie lui il locale vicino a te.",
+  "description": "Sushi stasera? Decide il dado. Fine della discussione.",
   "lang": "it",
   "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#141A17",
-  "theme_color": "#141A17",
+  "background_color": "#FFE600",
+  "theme_color": "#FFE600",
   "categories": ["food", "lifestyle"],
   "icons": [
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" },
