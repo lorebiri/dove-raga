@@ -23,6 +23,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Installa osmium (per la prova completa dello scaricamento dati)
+        run: sudo apt-get update -q && sudo apt-get install -y -q osmium-tool
       - name: Test unitari (selezione, dati, link di gruppo, cartolina)
         run: npm test
       - name: Installa Chromium per Playwright

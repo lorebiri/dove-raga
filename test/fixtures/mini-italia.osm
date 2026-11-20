@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="test">
+  <!-- confine Italia: quadrato 44-46 N, 10-12 E -->
+  <node id="1" version="1" lat="44" lon="10"/><node id="2" version="1" lat="44" lon="12"/>
+  <node id="3" version="1" lat="46" lon="12"/><node id="4" version="1" lat="46" lon="10"/>
+  <!-- comune e provincia: quadrato 44.4-44.6 N, 11.2-11.4 E -->
+  <node id="11" version="1" lat="44.4" lon="11.2"/><node id="12" version="1" lat="44.4" lon="11.4"/>
+  <node id="13" version="1" lat="44.6" lon="11.4"/><node id="14" version="1" lat="44.6" lon="11.2"/>
+  <!-- comune estero (Svizzera finta) fuori dal quadrato -->
+  <node id="21" version="1" lat="46.1" lon="9"/><node id="22" version="1" lat="46.1" lon="9.2"/>
+  <node id="23" version="1" lat="46.3" lon="9.2"/><node id="24" version="1" lat="46.3" lon="9"/>
+  <node id="100" version="1" lat="44.5" lon="11.3"><tag k="amenity" v="restaurant"/><tag k="cuisine" v="sushi"/><tag k="name" v="Nigiri Dentro"/><tag k="takeaway" v="yes"/></node>
+  <node id="101" version="1" lat="46.2" lon="9.1"><tag k="amenity" v="restaurant"/><tag k="cuisine" v="japanese"/><tag k="name" v="Ramen Fuori"/></node>
+  <node id="102" version="1" lat="44.6" lon="11.1"><tag k="amenity" v="restaurant"/><tag k="cuisine" v="pizza"/><tag k="name" v="Pizza"/></node>
+  <node id="31" version="1" lat="45.0" lon="11.0"/><node id="32" version="1" lat="45.0" lon="11.002"/>
+  <node id="33" version="1" lat="45.002" lon="11.002"/><node id="34" version="1" lat="45.002" lon="11.0"/>
+  <way id="1" version="1"><nd ref="1"/><nd ref="2"/><nd ref="3"/><nd ref="4"/><nd ref="1"/></way>
+  <way id="2" version="1"><nd ref="11"/><nd ref="12"/><nd ref="13"/><nd ref="14"/><nd ref="11"/></way>
+  <way id="3" version="1"><nd ref="21"/><nd ref="22"/><nd ref="23"/><nd ref="24"/><nd ref="21"/></way>
+  <way id="4" version="1"><nd ref="31"/><nd ref="32"/><nd ref="33"/><nd ref="34"/><nd ref="31"/><tag k="amenity" v="fast_food"/><tag k="cuisine" v="japanese;ramen"/><tag k="name" v="Udon Edificio"/><tag k="building" v="yes"/></way>
+  <relation id="365331" version="1"><member type="way" ref="1" role="outer"/><tag k="type" v="boundary"/><tag k="boundary" v="administrative"/><tag k="admin_level" v="2"/><tag k="ISO3166-1" v="IT"/><tag k="name" v="Italia"/></relation>
+  <relation id="500" version="1"><member type="way" ref="2" role="outer"/><tag k="type" v="boundary"/><tag k="boundary" v="administrative"/><tag k="admin_level" v="6"/><tag k="ref:ISTAT" v="037"/><tag k="ref" v="BO"/><tag k="name" v="Provincia Prova"/></relation>
+  <relation id="501" version="1"><member type="way" ref="2" role="outer"/><tag k="type" v="boundary"/><tag k="boundary" v="administrative"/><tag k="admin_level" v="8"/><tag k="ref:ISTAT" v="037006"/><tag k="name" v="Comune Prova"/><tag k="population" v="12345"/></relation>
+  <relation id="502" version="1"><member type="way" ref="3" role="outer"/><tag k="type" v="boundary"/><tag k="boundary" v="administrative"/><tag k="admin_level" v="8"/><tag k="ref:ISTAT" v="999999"/><tag k="name" v="Comune Estero"/></relation>
+</osm>

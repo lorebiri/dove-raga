@@ -1,82 +1,7 @@
-// Trasforma le risposte di Overpass nei file statici compatti dell'app.
-// Funzioni pure: niente rete, niente file. Testate in test/osm.test.mjs.
+// Trasforma gli elementi OSM nei file statici compatti dell'app.
+// Funzioni pure: niente rete, niente file. Testate in test/unit/osm-data.test.mjs.
 
 export const TILE_DEG = 1; // deve coincidere con app/js/geo.js
-
-// Riquadro dell'Italia (sud, ovest, nord, est) diviso in zone da 2°: tante richieste piccole
-// invece di una enorme, così Overpass non va in timeout.
-export const ITALY_BBOX = [35.2, 6.5, 47.2, 18.6];
-export const ZONE_DEG = 2;
-
-/** Zone [s, w, n, e] che coprono il riquadro. */
-export function zones(bbox = ITALY_BBOX, step = ZONE_DEG) {
-  const [S, W, N, E] = bbox;
-  const out = [];
-  for (let s = S; s < N; s += step) for (let w = W; w < E; w += step) {
-    out.push([s, w, Math.min(s + step, N), Math.min(w + step, E)].map(x => Math.round(x * 1000) / 1000));
-  }
-  return out;
-}
-
-/** Divide una zona [s, w, n, e] in 4 quadranti (per riprovare una zona troppo pesante). */
-export function splitZone([s, w, n, e]) {
-  const r = x => Math.round(x * 1000) / 1000;
-  const ms = r((s + n) / 2), mw = r((w + e) / 2);
-  return [[s, w, ms, mw], [s, mw, ms, e], [ms, w, n, mw], [ms, mw, n, e]];
-}
-
-const AREA_IT = `area["ISO3166-1"="IT"]["admin_level"="2"]->.it;`;
-const bb = z => `(${z.join(",")})`;
-
-/** Locali sushi/giapponesi in Italia dentro una zona. */
-export function placesQuery(z) {
-  return `[out:json][timeout:120][maxsize:67108864];
-${AREA_IT}
-nwr(area.it)${bb(z)}["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"sushi|japanese",i];
-out center tags;
-.it out ids;`;
-}
-
-/** Comuni (confini di livello 8) in Italia che toccano una zona. */
-export function comuniQuery(z) {
-  return `[out:json][timeout:180][maxsize:134217728];
-${AREA_IT}
-rel(area.it)${bb(z)}["boundary"="administrative"]["admin_level"="8"];
-out tags center;
-.it out ids;`;
-}
-
-/** Province (livello 6): solo i tag, per la sigla. Leggera, una richiesta. */
-export const PROVINCE_QUERY = `[out:json][timeout:180];
-${AREA_IT}
-rel(area.it)["boundary"="administrative"]["admin_level"="6"];
-out tags;
-.it out ids;`;
-
-/**
- * Ogni richiesta chiede anche l'id dell'area «Italia». Un server che non ha le aree
- * risponde 0 elementi senza errori: senza questa prova non si distingue da una zona vuota.
- * Restituisce la risposta senza l'elemento di controllo, oppure lancia un errore.
- */
-export function checkArea(json) {
-  const els = json?.elements;
-  if (!Array.isArray(els)) throw new Error("risposta senza elementi");
-  if (!els.some(e => e.type === "area")) throw new Error("il server non ha l'area Italia (risposta vuota non affidabile)");
-  return { ...json, elements: els.filter(e => e.type !== "area") };
-}
-
-/** Unisce le risposte di più zone togliendo gli elementi ripetuti (stesso tipo e id). */
-export function mergeResponses(responses) {
-  const seen = new Set();
-  const elements = [];
-  for (const r of responses) for (const el of r?.elements || []) {
-    const k = el.type + el.id;
-    if (seen.has(k)) continue;
-    seen.add(k);
-    elements.push(el);
-  }
-  return { elements };
-}
 
 /**
  * Il nuovo totale è credibile? Deve superare il minimo e non crollare
@@ -125,7 +50,7 @@ export function tileOf(lat, lon) {
   return `${Math.floor(lat / TILE_DEG) * TILE_DEG}_${Math.floor(lon / TILE_DEG) * TILE_DEG}`;
 }
 
-/** Risposta Overpass dei locali → { index, tiles: { chiave: {v, p} } }. */
+/** Elementi OSM dei locali → { index, tiles: { chiave: {v, p} } }. */
 export function buildPlaces(json, generated = new Date().toISOString()) {
   const seen = new Set();
   const rows = [];
@@ -144,7 +69,7 @@ export function buildPlaces(json, generated = new Date().toISOString()) {
   return { index: { v: 1, generated, count: rows.length, tileDeg: TILE_DEG, tiles: counts }, tiles };
 }
 
-/** Risposta Overpass dei comuni → { v, generated, c: [[nome, lat, lon, sigla, abitanti]] }. */
+/** Elementi OSM di province e comuni → { v, generated, c: [[nome, lat, lon, sigla, abitanti]] }. */
 export function buildComuni(json, generated = new Date().toISOString()) {
   const els = json?.elements || [];
   const prov = new Map();

@@ -22,26 +22,16 @@ jobs:
   build:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 330
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Zone già scaricate nei giri precedenti (ripresa)
-        uses: actions/cache/restore@v4
-        with:
-          path: .cache/overpass
-          key: overpass-${{ github.run_id }}-${{ github.run_attempt }}
-          restore-keys: overpass-
-      - name: Dati freschi da Overpass (se non risponde, resta la copia del repo)
-        run: mkdir -p .cache/overpass && node scripts/fetch-data.mjs || echo "::warning::Overpass non disponibile, uso i dati salvati nel repo"
-      - name: Conserva le zone scaricate, anche se il giro non è completo
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: .cache/overpass
-          key: overpass-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Installa osmium
+        run: sudo apt-get update -q && sudo apt-get install -y -q osmium-tool
+      - name: Dati freschi dall'estratto OSM (se non arriva, resta la copia del repo)
+        run: node scripts/fetch-data.mjs || echo "::warning::Estratto OSM non disponibile, uso i dati salvati nel repo"
       - name: Controlla i dati
         run: node --test test/unit/snapshot.test.mjs
       - name: Prepara il sito

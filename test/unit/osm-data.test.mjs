@@ -123,54 +123,11 @@ test("findPlace: trova per chiave, null se sparito", async () => {
   assert.equal(await findPlace(f, built.index, "n999", 41.9, 12.49), null);
 });
 
-import { zones, placesQuery, comuniQuery, mergeResponses, plausible, ITALY_BBOX } from "../../scripts/lib/osm.mjs";
-
-test("zones: coprono l'Italia senza buchi né sovrapposizioni", () => {
-  const zs = zones();
-  assert.ok(zs.length > 20 && zs.length < 60, `${zs.length} zone`);
-  const area = zs.reduce((a, [s, w, n, e]) => a + (n - s) * (e - w), 0);
-  const [S, W, N, E] = ITALY_BBOX;
-  assert.ok(Math.abs(area - (N - S) * (E - W)) < 1e-6);
-  for (const [la, lo] of [[45.4642, 9.19], [41.9, 12.49], [37.5, 15.09], [38.11, 13.36], [39.22, 9.12], [46.5, 11.35], [40.85, 14.27]]) {
-    const hits = zs.filter(([s, w, n, e]) => la >= s && la < n && lo >= w && lo < e);
-    assert.equal(hits.length, 1, `${la},${lo}`);
-  }
-});
-
-test("query per zona: riquadro e filtri giusti", () => {
-  const q = placesQuery([45, 9, 47, 11]);
-  assert.match(q, /nwr\(area\.it\)\(45,9,47,11\)/);
-  assert.match(q, /cuisine"~"sushi\|japanese",i/);
-  assert.match(comuniQuery([45, 9, 47, 11]), /admin_level"="8"[\s\S]*out tags center/);
-});
-
-test("mergeResponses: toglie i doppioni tra zone confinanti", () => {
-  const a = { elements: [{ type: "node", id: 1 }, { type: "way", id: 1 }] };
-  const b = { elements: [{ type: "node", id: 1 }, { type: "relation", id: 9 }] };
-  assert.deepEqual(mergeResponses([a, b, null]).elements.map(e => e.type + e.id), ["node1", "way1", "relation9"]);
-});
+import { plausible } from "../../scripts/lib/osm.mjs";
 
 test("plausible: minimo e crollo rispetto alla copia precedente", () => {
   assert.equal(plausible(3000, { min: 500 }), "");
   assert.match(plausible(100, { min: 500 }), /minimo/);
   assert.match(plausible(2000, { min: 500, previous: 3000, maxDrop: 0.2 }), /calo/);
   assert.equal(plausible(2900, { min: 500, previous: 3000, maxDrop: 0.2 }), "");
-});
-
-test("splitZone: 4 quadranti che coprono la zona", async () => {
-  const { splitZone } = await import("../../scripts/lib/osm.mjs");
-  const q = splitZone([41.2, 10.5, 43.2, 12.5]);
-  assert.equal(q.length, 4);
-  assert.deepEqual(q[0], [41.2, 10.5, 42.2, 11.5]);
-  assert.deepEqual(q[3], [42.2, 11.5, 43.2, 12.5]);
-  const area = z => (z[2] - z[0]) * (z[3] - z[1]);
-  assert.ok(Math.abs(q.reduce((a, z) => a + area(z), 0) - 4) < 1e-9);
-});
-
-test("checkArea: senza l'area Italia la risposta non vale, con l'area si toglie l'elemento di controllo", async () => {
-  const { checkArea, placesQuery, comuniQuery, PROVINCE_QUERY } = await import("../../scripts/lib/osm.mjs");
-  assert.throws(() => checkArea({ elements: [] }), /area Italia/);
-  const ok = checkArea({ elements: [{ type: "node", id: 1 }, { type: "area", id: 3600365331 }] });
-  assert.deepEqual(ok.elements, [{ type: "node", id: 1 }]);
-  for (const q of [placesQuery([41, 12, 42, 13]), comuniQuery([41, 12, 42, 13]), PROVINCE_QUERY]) assert.match(q, /\.it out ids;/);
 });
