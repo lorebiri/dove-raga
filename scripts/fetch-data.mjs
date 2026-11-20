@@ -16,7 +16,7 @@ import { mkdir, writeFile, rm, readFile, rename, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { zones, splitZone, placesQuery, comuniQuery, PROVINCE_QUERY, mergeResponses, plausible, buildPlaces, buildComuni } from "./lib/osm.mjs";
+import { zones, splitZone, checkArea, placesQuery, comuniQuery, PROVINCE_QUERY, mergeResponses, plausible, buildPlaces, buildComuni } from "./lib/osm.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "app", "data");
@@ -50,9 +50,8 @@ async function post(url, query) {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
-    if (!Array.isArray(json.elements)) throw new Error("risposta senza elementi");
     if (json.remark && /error|timed out|runtime|out of memory/i.test(json.remark)) throw new Error(json.remark.slice(0, 160));
-    return json;
+    return checkArea(json);
   } finally {
     clearTimeout(timer);
   }
@@ -80,7 +79,8 @@ async function overpass(query, label, attempts = LAST_ATTEMPTS) {
 }
 
 // Cache delle zone: un file per tipo e zona, valido CACHE_DAYS giorni.
-const cacheFile = (kind, z) => join(CACHE, `${kind}_${z.join("_")}.json`);
+// "v2": le zone salvate prima del controllo dell'area non sono affidabili.
+const cacheFile = (kind, z) => join(CACHE, `v2_${kind}_${z.join("_")}.json`);
 async function fromCache(kind, z) {
   const f = cacheFile(kind, z);
   try {

@@ -33,7 +33,8 @@ export function placesQuery(z) {
   return `[out:json][timeout:120][maxsize:67108864];
 ${AREA_IT}
 nwr(area.it)${bb(z)}["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"sushi|japanese",i];
-out center tags;`;
+out center tags;
+.it out ids;`;
 }
 
 /** Comuni (confini di livello 8) in Italia che toccano una zona. */
@@ -41,14 +42,28 @@ export function comuniQuery(z) {
   return `[out:json][timeout:180][maxsize:134217728];
 ${AREA_IT}
 rel(area.it)${bb(z)}["boundary"="administrative"]["admin_level"="8"];
-out tags center;`;
+out tags center;
+.it out ids;`;
 }
 
 /** Province (livello 6): solo i tag, per la sigla. Leggera, una richiesta. */
 export const PROVINCE_QUERY = `[out:json][timeout:180];
 ${AREA_IT}
 rel(area.it)["boundary"="administrative"]["admin_level"="6"];
-out tags;`;
+out tags;
+.it out ids;`;
+
+/**
+ * Ogni richiesta chiede anche l'id dell'area «Italia». Un server che non ha le aree
+ * risponde 0 elementi senza errori: senza questa prova non si distingue da una zona vuota.
+ * Restituisce la risposta senza l'elemento di controllo, oppure lancia un errore.
+ */
+export function checkArea(json) {
+  const els = json?.elements;
+  if (!Array.isArray(els)) throw new Error("risposta senza elementi");
+  if (!els.some(e => e.type === "area")) throw new Error("il server non ha l'area Italia (risposta vuota non affidabile)");
+  return { ...json, elements: els.filter(e => e.type !== "area") };
+}
 
 /** Unisce le risposte di più zone togliendo gli elementi ripetuti (stesso tipo e id). */
 export function mergeResponses(responses) {

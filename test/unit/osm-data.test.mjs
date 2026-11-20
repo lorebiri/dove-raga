@@ -166,3 +166,11 @@ test("splitZone: 4 quadranti che coprono la zona", async () => {
   const area = z => (z[2] - z[0]) * (z[3] - z[1]);
   assert.ok(Math.abs(q.reduce((a, z) => a + area(z), 0) - 4) < 1e-9);
 });
+
+test("checkArea: senza l'area Italia la risposta non vale, con l'area si toglie l'elemento di controllo", async () => {
+  const { checkArea, placesQuery, comuniQuery, PROVINCE_QUERY } = await import("../../scripts/lib/osm.mjs");
+  assert.throws(() => checkArea({ elements: [] }), /area Italia/);
+  const ok = checkArea({ elements: [{ type: "node", id: 1 }, { type: "area", id: 3600365331 }] });
+  assert.deepEqual(ok.elements, [{ type: "node", id: 1 }]);
+  for (const q of [placesQuery([41, 12, 42, 13]), comuniQuery([41, 12, 42, 13]), PROVINCE_QUERY]) assert.match(q, /\.it out ids;/);
+});
