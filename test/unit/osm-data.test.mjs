@@ -156,3 +156,13 @@ test("plausible: minimo e crollo rispetto alla copia precedente", () => {
   assert.match(plausible(2000, { min: 500, previous: 3000, maxDrop: 0.2 }), /calo/);
   assert.equal(plausible(2900, { min: 500, previous: 3000, maxDrop: 0.2 }), "");
 });
+
+test("splitZone: 4 quadranti che coprono la zona", async () => {
+  const { splitZone } = await import("../../scripts/lib/osm.mjs");
+  const q = splitZone([41.2, 10.5, 43.2, 12.5]);
+  assert.equal(q.length, 4);
+  assert.deepEqual(q[0], [41.2, 10.5, 42.2, 11.5]);
+  assert.deepEqual(q[3], [42.2, 11.5, 43.2, 12.5]);
+  const area = z => (z[2] - z[0]) * (z[3] - z[1]);
+  assert.ok(Math.abs(q.reduce((a, z) => a + area(z), 0) - 4) < 1e-9);
+});

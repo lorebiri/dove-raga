@@ -18,12 +18,19 @@ export function zones(bbox = ITALY_BBOX, step = ZONE_DEG) {
   return out;
 }
 
+/** Divide una zona [s, w, n, e] in 4 quadranti (per riprovare una zona troppo pesante). */
+export function splitZone([s, w, n, e]) {
+  const r = x => Math.round(x * 1000) / 1000;
+  const ms = r((s + n) / 2), mw = r((w + e) / 2);
+  return [[s, w, ms, mw], [s, mw, ms, e], [ms, w, n, mw], [ms, mw, n, e]];
+}
+
 const AREA_IT = `area["ISO3166-1"="IT"]["admin_level"="2"]->.it;`;
 const bb = z => `(${z.join(",")})`;
 
 /** Locali sushi/giapponesi in Italia dentro una zona. */
 export function placesQuery(z) {
-  return `[out:json][timeout:180];
+  return `[out:json][timeout:120][maxsize:67108864];
 ${AREA_IT}
 nwr(area.it)${bb(z)}["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"sushi|japanese",i];
 out center tags;`;
@@ -31,7 +38,7 @@ out center tags;`;
 
 /** Comuni (confini di livello 8) in Italia che toccano una zona. */
 export function comuniQuery(z) {
-  return `[out:json][timeout:300];
+  return `[out:json][timeout:180][maxsize:134217728];
 ${AREA_IT}
 rel(area.it)${bb(z)}["boundary"="administrative"]["admin_level"="8"];
 out tags center;`;
