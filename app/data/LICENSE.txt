@@ -1,0 +1,7 @@
+I file di questa cartella derivano da OpenStreetMap.
+Dati © contributori OpenStreetMap, disponibili con licenza Open Database License (ODbL) 1.0.
+https://www.openstreetmap.org/copyright
+https://opendatacommons.org/licenses/odbl/1-0/
+
+Questa raccolta derivata (locali sushi/giapponesi e comuni d'Italia) è distribuita
+anch'essa con licenza ODbL 1.0.
