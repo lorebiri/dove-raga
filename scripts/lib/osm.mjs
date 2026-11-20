@@ -69,6 +69,10 @@ export function buildPlaces(json, generated = new Date().toISOString()) {
   return { index: { v: 1, generated, count: rows.length, tileDeg: TILE_DEG, tiles: counts }, tiles };
 }
 
+// Sigle per i territori dove in OSM manca una provincia con la sigla (codice ISTAT a 3 cifre):
+// Valle d'Aosta (nessuna provincia) e Sardegna (province riordinate più volte).
+const SIGLE_RISERVA = { "007": "AO", "090": "SS", "091": "NU", "092": "CA", "095": "OR", "111": "SU", "292": "CA" };
+
 /** Elementi OSM di province e comuni → { v, generated, c: [[nome, lat, lon, sigla, abitanti]] }. */
 export function buildComuni(json, generated = new Date().toISOString()) {
   const els = json?.elements || [];
@@ -89,7 +93,8 @@ export function buildComuni(json, generated = new Date().toISOString()) {
     const c = coords(el);
     if (!name || !c) continue;
     const istat = clean(t["ref:ISTAT"]);
-    const sigla = /^\d{6}$/.test(istat) ? prov.get(istat.slice(0, 3)) || "" : "";
+    const code = istat.slice(0, 3);
+    const sigla = /^\d{6}$/.test(istat) ? prov.get(code) || SIGLE_RISERVA[code] || "" : "";
     const id = name + "|" + sigla;
     if (seen.has(id)) continue;
     seen.add(id);

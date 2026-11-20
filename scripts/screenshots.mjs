@@ -70,6 +70,7 @@ try {
     await friend.goto(url);
     await friend.locator("#placeName").waitFor();
     await friend.waitForTimeout(600);
+    await friend.locator("#result").scrollIntoViewIfNeeded();
     await shot(friend, "07-gruppo-stesso-esito.png");
   });
 

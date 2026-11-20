@@ -131,3 +131,10 @@ test("plausible: minimo e crollo rispetto alla copia precedente", () => {
   assert.match(plausible(2000, { min: 500, previous: 3000, maxDrop: 0.2 }), /calo/);
   assert.equal(plausible(2900, { min: 500, previous: 3000, maxDrop: 0.2 }), "");
 });
+
+test("buildComuni: sigla di riserva per Valle d'Aosta e Sardegna", async () => {
+  const { buildComuni } = await import("../../scripts/lib/osm.mjs");
+  const el = (name, istat) => ({ type: "relation", id: 1, center: { lat: 45, lon: 7 }, tags: { admin_level: "8", name, "ref:ISTAT": istat } });
+  const out = buildComuni({ elements: [el("Aosta", "007003"), el("Sassari", "090064"), el("Boh", "999001")] }).c;
+  assert.deepEqual(Object.fromEntries(out.map(r => [r[0], r[3]])), { Aosta: "AO", Sassari: "SS", Boh: "" });
+});
