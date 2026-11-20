@@ -2,6 +2,7 @@
 // Genera i file statici di app/data/ (locali sushi/giapponesi e comuni d'Italia) dall'estratto
 // OpenStreetMap dell'Italia pubblicato ogni giorno da Geofabrik. Pensato per GitHub Actions.
 //
+// Fonti: Geofabrik, poi il mirror di OpenStreetMap Francia (stesso estratto).
 // Perché non Overpass: i server pubblici di Overpass da GitHub Actions rispondono a fatica
 // (rifiuti, 502/504, aree mancanti che danno zone vuote). L'estratto è UN file scaricato
 // una volta a settimana, verificato con la sua impronta MD5, e filtrato in locale con osmium.
@@ -11,7 +12,7 @@
 // totali siano credibili → sostituisce i file in un colpo solo.
 //
 // Uso: node scripts/fetch-data.mjs [--pbf file.osm.pbf]   (richiede osmium-tool e curl)
-// Variabili: PBF_URL, MIN_PLACES, MIN_COMUNI, WORK_DIR, OUT_DIR.
+// Variabili: PBF_URLS, MIN_PLACES, MIN_COMUNI, WORK_DIR, OUT_DIR.
 import { mkdir, writeFile, rm, readFile, rename } from "node:fs/promises";
 import { existsSync, createReadStream } from "node:fs";
 import { createHash } from "node:crypto";
@@ -25,7 +26,11 @@ import { toElement, prepareArea, inArea, isItaly, isPlace, isAdmin } from "./lib
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = process.env.OUT_DIR || join(ROOT, "app", "data");
 const WORK = process.env.WORK_DIR || join(ROOT, ".cache", "osm");
-const PBF_URL = process.env.PBF_URL || "https://download.geofabrik.de/europe/italy-latest.osm.pbf";
+// Stesso estratto da due fonti: Geofabrik e il mirror di OpenStreetMap Francia.
+const PBF_URLS = (process.env.PBF_URLS || [
+  "https://download.geofabrik.de/europe/italy-latest.osm.pbf",
+  "https://download.openstreetmap.fr/extracts/europe/italy-latest.osm.pbf",
+].join(",")).split(",");
 const UA = "DoveRaga-data/1.0 (weekly static export; +https://github.com/lorebiri/dove-raga)";
 const MIN_PLACES = Number(process.env.MIN_PLACES ?? 500);
 const MIN_COMUNI = Number(process.env.MIN_COMUNI ?? 7500);
@@ -39,24 +44,36 @@ async function md5(file) {
   return h.digest("hex");
 }
 
-/** Scarica l'estratto e lo verifica con il file .md5 accanto. Riprova fino a 3 volte. */
+const curl = (args, opts) => execFileSync("curl", ["-fsSL", "--connect-timeout", "30", "-A", UA, ...args], opts);
+
+/**
+ * Scarica l'estratto provando le fonti a turno (3 giri, con pause crescenti).
+ * Verifica: impronta MD5 se la fonte la pubblica, e sempre la lettura completa del file con osmium.
+ */
 async function download() {
   const file = join(WORK, "italy.osm.pbf");
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    try {
-      log(`scarico ${PBF_URL} (tentativo ${attempt})…`);
-      run("curl", ["-fsSL", "--retry", "5", "--retry-delay", "30", "--retry-all-errors", "-A", UA, "-o", file, PBF_URL]);
-      const expected = execFileSync("curl", ["-fsSL", "--retry", "5", "-A", UA, PBF_URL + ".md5"], { encoding: "utf8" }).trim().split(/\s+/)[0];
-      const got = await md5(file);
-      if (expected !== got) throw new Error(`MD5 diverso (atteso ${expected}, ottenuto ${got})`);
-      log("estratto scaricato e verificato");
-      return file;
-    } catch (e) {
-      console.warn(`[dati] scaricamento non riuscito: ${e.message}`);
-      if (attempt < 3) await new Promise(r => setTimeout(r, 60_000 * attempt));
+  for (let round = 1; round <= 3; round++) {
+    for (const url of PBF_URLS) {
+      const host = new URL(url).host;
+      try {
+        log(`scarico da ${host} (giro ${round})…`);
+        curl(["--retry", "3", "--retry-delay", "20", "-o", file, url], { stdio: ["ignore", "inherit", "pipe"] });
+        let expected = "";
+        try { expected = curl([url + ".md5"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim().split(/\s+/)[0]; } catch {}
+        if (/^[0-9a-f]{32}$/.test(expected)) {
+          const got = await md5(file);
+          if (expected !== got) throw new Error(`MD5 diverso (atteso ${expected}, ottenuto ${got})`);
+        }
+        execFileSync("osmium", ["fileinfo", "--extended", "--no-progress", file], { stdio: "ignore" });
+        log(`estratto scaricato da ${host} e verificato${expected ? " (MD5 e lettura completa)" : " (lettura completa)"}`);
+        return file;
+      } catch (e) {
+        console.warn(`[dati] ${host}: non riuscito (${String(e.stderr || e.message).trim().split("\n").pop()})`);
+      }
     }
+    if (round < 3) await new Promise(r => setTimeout(r, 60_000 * round));
   }
-  throw new Error("estratto OSM non scaricato");
+  throw new Error("estratto OSM non scaricato da nessuna fonte");
 }
 
 /** osmium: tiene solo locali e confini amministrativi, poi esporta in GeoJSON (una riga per oggetto). */
